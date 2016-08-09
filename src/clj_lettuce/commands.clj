@@ -1,15 +1,15 @@
 (ns clj-lettuce.commands
   (:refer-clojure :exclude [get set]))
 
-(defprotocol RedisConn
-  ""
-  (redis-cli [this redis-uri])
-  (stateful-conn [this cli])
-  (close-conn [this conn])
-  (shutdown [this cli]))
+(defprotocol RedisConnector
+  "Functions to manipulate Redis client and connections"
+  (redis-cli [this])
+  (stateful-conn [this])
+  (close-conn [this])
+  (shutdown [this]))
 
-(defmulti mk-commands
-  (fn [type redis-conn] type))
+(defmulti commands
+  (fn [type redis-connector] type))
 
 (defprotocol StringsCommands
   "Redis Strings Commands"

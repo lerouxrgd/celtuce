@@ -1,8 +1,7 @@
 (ns clj-lettuce.cluster.sync
   (:refer-clojure :exclude [get set])
   (:require [clj-lettuce.commands :refer :all])
-  (:import [com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection]
-           [com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands]))
+  (:import [com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands]))
 
 (extend-type RedisAdvancedClusterCommands
   StringsCommands

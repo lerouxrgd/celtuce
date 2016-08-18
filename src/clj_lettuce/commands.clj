@@ -11,12 +11,6 @@
 (defmulti commands
   (fn [type redis-connector] type))
 
-(defprotocol StringsCommands
-  "Redis Strings Commands"
-  (get [this k]   "Gets the value for k")
-  (set [this k v] "Sets k to the v")
-  (mget [this ks] "Gets the values for the col of keys"))
-
 (defprotocol HashCommands
   "Redis Hash Commands"
   (hdel [this k fs] "")
@@ -35,3 +29,12 @@
   (hstrlen [this k f] "")
   (hvals [this k] ""))
 
+(defprotocol StringsCommands
+  "Redis Strings Commands"
+  (get [this k]   "Get the value of a key")
+  (set [this k v] "Set the string value of a key")
+  (mget [this ks] "Get the values of all the given keys"))
+
+(defprotocol ServerCommands
+  "Redis Server Commands"
+  (flushall [this] "Remove all keys from all databases"))

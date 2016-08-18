@@ -11,4 +11,7 @@
     (.set this k v))
   (mget [this ks] 
     (into (empty ks) (.mget this (into-array ks))))
+  ServerCommands
+  (flushall [this]
+    (.flushall this))
   )

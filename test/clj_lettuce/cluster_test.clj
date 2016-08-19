@@ -16,15 +16,27 @@
 (use-fixtures :once cmds-fixture)
 
 (deftest string-commands-test
-  (testing "set and get a values with different type"
+
+  (testing "set and get string keys/values"
     (redis/set *cmds* "foo"     "bar")
     (redis/set *cmds* "foofoo"  "barbar")
-    #_(redis/set *cmds* "foo-int" 1) ;; TODO investigate Encoder to make this work
-    #_(redis/set *cmds* "foo-kw"  :bar)
-    (is (= "bar" (redis/get *cmds* "foo")))
-    #_(is (= 1     (redis/get *cmds* "foo-int")))
-    #_(println (redis/get *cmds* "foo-kw"))
-    )
+    (is (= "bar"    (redis/get *cmds* "foo")))
+    (is (= "barbar" (redis/get *cmds* "foofoo"))))
+  
   (testing "multiget and result type (with underlying (into (empty keys) ...)"
     (is (=  ["bar" "barbar"] (redis/mget *cmds*  ["foo" "foofoo"])))
-    (is (= '("barbar" "bar") (redis/mget *cmds* '("foo" "foofoo"))))))
+    (is (= '("barbar" "bar") (redis/mget *cmds* '("foo" "foofoo")))))
+  
+  (testing "set and get various keys/values"
+    (redis/set *cmds* "foo-int" 1337)
+    (redis/set *cmds* 666       "devil")
+    (redis/set *cmds* :foo-kw   :bar-kw)
+    (redis/set *cmds* #{1 2 3}  '(1 2 3))
+    (redis/set *cmds* {:a "a"}  [:b "b"])
+    (is (= 1337     (redis/get *cmds* "foo-int")))
+    (is (= "devil"  (redis/get *cmds* 666)))
+    (is (= :bar-kw  (redis/get *cmds* :foo-kw)))
+    (is (= '(1 2 3) (redis/get *cmds* #{1 2 3})))
+    (is (= [:b "b"] (redis/get *cmds* {:a "a"}))))
+  
+  )

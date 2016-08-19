@@ -5,6 +5,7 @@
   "Functions to manipulate Redis client and connections"
   (redis-cli [this])
   (stateful-conn [this])
+  (conn-open? [this])
   (close-conn [this])
   (shutdown [this]))
 

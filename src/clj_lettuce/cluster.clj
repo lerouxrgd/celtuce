@@ -1,8 +1,10 @@
 (ns clj-lettuce.cluster
   (:require [clj-lettuce.commands :refer [RedisConnector commands stateful-conn]]
+            [clj-lettuce.codec :refer [carbonite-codec]]
             clj-lettuce.cluster.sync
             clj-lettuce.cluster.async)
   (:import [com.lambdaworks.redis.cluster RedisClusterClient]
+           [com.lambdaworks.redis.codec RedisCodec]
            [com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection]))
 
 (defrecord RedisCluster [redis-cli stateful-conn]
@@ -11,15 +13,20 @@
     redis-cli)
   (stateful-conn [this] 
     stateful-conn)
+  (conn-open? [this]
+    (.isOpen ^StatefulRedisClusterConnection stateful-conn))
   (close-conn [this]
     (.close ^StatefulRedisClusterConnection stateful-conn))
   (shutdown [this]
     (.shutdown ^RedisClusterClient redis-cli)))
 
-(defn redis-cluster [^String redis-uri]
-  (let [redis-cli (RedisClusterClient/create redis-uri)
-        stateful-conn (.connect ^RedisClusterClient redis-cli)]
-    (->RedisCluster redis-cli stateful-conn)))
+(defn redis-cluster 
+  ([redis-uri]
+   (redis-cluster redis-uri (carbonite-codec)))
+  ([^String redis-uri ^RedisCodec codec]
+   (let [redis-cli (RedisClusterClient/create redis-uri)
+         stateful-conn (.connect redis-cli codec)]
+     (->RedisCluster redis-cli stateful-conn))))
 
 (defmethod commands :cluster-sync 
   [type redis-connector]

@@ -14,21 +14,22 @@
 
 (defprotocol HashCommands
   "Redis Hash Commands"
-  (hdel [this k fs] "")
-  (hexists [this k f] "")
-  (hget [this k f] "")
-  (hincrby [this k f a] "")
-  (hincrbyfloat [this k f a] "")
-  (hgetall [this k] "")
-  (hkeys [this k] "")
-  (hlen [this k] "")
-  (hmget [this k fs] "")
-  (hmset [this k m] "")
-  (hscan [this k] "")
-  (hset [this k f v] "")
-  (hsetnx [this k f v] "")
-  (hstrlen [this k f] "")
-  (hvals [this k] ""))
+  (hdel [this k f]           "Delete one hash field")
+  (hmdel [this k fs]         "Delete multiple hash fields")
+  (hexists [this k f]        "Determine if a hash field exists")
+  (hget [this k f]           "Get the value of a hash field")
+  (hincrby [this k f a]      "Increment the value of a hash field by long")
+  (hincrbyfloat [this k f a] "Increment the value of a hash field by double")
+  (hgetall [this k]          "Get all the fields and values in a hash")
+  (hkeys [this k]            "Get all the fields in a hash")
+  (hlen [this k]             "Get the number of fields in a hash")
+  (hmget [this k fs]         "Get the values of all the given hash fields")
+  (hmset [this k m]          "Set multiple hash fields to multiple values")
+  (hscan [this k]            "Incrementally iterate hash fields and associated values")
+  (hset [this k f v]         "Set the string value of a hash field")
+  (hsetnx [this k f v]       "Set the value of a hash field, only if it doesn't exist")
+  (hstrlen [this k f]        "Get the string length of the field value in a hash")
+  (hvals [this k]            "Get all the values in a hash"))
 
 (defprotocol StringsCommands
   "Redis Strings Commands"

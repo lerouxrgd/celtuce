@@ -15,7 +15,6 @@
 (defprotocol HashCommands
   "Redis Hash Commands"
   (hdel [this k f]           "Delete one hash field")
-  (hmdel [this k fs]         "Delete multiple hash fields")
   (hexists [this k f]        "Determine if a hash field exists")
   (hget [this k f]           "Get the value of a hash field")
   (hincrby [this k f a]      "Increment the value of a hash field by long")
@@ -23,6 +22,7 @@
   (hgetall [this k]          "Get all the fields and values in a hash")
   (hkeys [this k]            "Get all the fields in a hash")
   (hlen [this k]             "Get the number of fields in a hash")
+  (hmdel [this k fs]         "Delete multiple hash fields")
   (hmget [this k fs]         "Get the values of all the given hash fields")
   (hmset [this k m]          "Set multiple hash fields to multiple values")
   (hscan [this k]            "Incrementally iterate hash fields and associated values")

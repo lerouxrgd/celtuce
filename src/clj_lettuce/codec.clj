@@ -35,20 +35,23 @@
 
 ;; Carbonite based codec
 
-(defn kryo-read [^Kryo kryo bb]
+(defn kryo-read 
   "Deserialize obj from ByteBuffer bb"
+  [^Kryo kryo bb]
   (with-open [in (Input. (ByteArrayInputStream. (bb->bytes bb)))]
     (.readClassAndObject kryo in)))
 
-(defn kryo-write [^Kryo kryo obj]
+(defn kryo-write 
   "Serialize obj to ByteBuffer"
+  [^Kryo kryo obj]
   (let [bos (ByteArrayOutputStream.)]
     (with-open [out (Output. bos)]
       (.writeClassAndObject kryo out obj))
     (bytes->bb (.toByteArray bos))))
 
-(defn kryos-pool [kryo-factory]
+(defn kryos-pool
   "Kryo objects pool with soft references to allow for GC when running out of memory"
+  [kryo-factory]
   (-> (proxy [KryoFactory] []
         (create []
           (kryo-factory)))
@@ -56,8 +59,9 @@
       .softReferences
       .build))
 
-(defmacro with-kryos-pool [kryo-pool form]
+(defmacro with-kryos-pool 
   "Inject a Kryo object from kryo-pool as the first parameter of form and run it"
+  [kryo-pool form]
   (let [kryo-pool (vary-meta kryo-pool assoc :tag `KryoPool)]
     `(let [kryo# (.borrow ~kryo-pool)
            res# (-> kryo# ~form)]

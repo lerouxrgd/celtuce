@@ -1,6 +1,6 @@
 (ns clj-lettuce.cluster
   (:require [clj-lettuce.commands :refer [RedisConnector commands stateful-conn]]
-            [clj-lettuce.codec :refer [carbonite-codec]]
+            [clj-lettuce.codec :refer [nippy-codec]]
             clj-lettuce.cluster.sync
             clj-lettuce.cluster.async)
   (:import [com.lambdaworks.redis.cluster RedisClusterClient]
@@ -22,7 +22,7 @@
 
 (defn redis-cluster 
   ([redis-uri]
-   (redis-cluster redis-uri (carbonite-codec)))
+   (redis-cluster redis-uri (nippy-codec)))
   ([^String redis-uri ^RedisCodec codec]
    (let [redis-cli (RedisClusterClient/create redis-uri)
          stateful-conn (.connect redis-cli codec)]

@@ -5,7 +5,8 @@
            [java.io ByteArrayOutputStream ByteArrayInputStream]
            [java.nio ByteBuffer]
            [com.esotericsoftware.kryo Kryo]
-           [com.esotericsoftware.kryo.io Output Input])
+           [com.esotericsoftware.kryo.io Output Input]
+           [com.esotericsoftware.kryo.pool KryoFactory KryoPool KryoPool$Builder])
   (:require [carbonite.api :refer [default-registry]]
             [taoensso.nippy :as nippy]))
 
@@ -34,35 +35,49 @@
 
 ;; Carbonite based codec
 
-(defn kryo-read [^Kryo registry ^ByteBuffer bb]
+(defn kryo-read [^Kryo kryo bb]
+  "Deserialize obj from ByteBuffer bb"
   (with-open [in (Input. (ByteArrayInputStream. (bb->bytes bb)))]
-    (.readClassAndObject registry in)))
+    (.readClassAndObject kryo in)))
 
-(defn kryo-write [^Kryo registry obj]
+(defn kryo-write [^Kryo kryo obj]
+  "Serialize obj to ByteBuffer"
   (let [bos (ByteArrayOutputStream.)]
     (with-open [out (Output. bos)]
-      (.writeClassAndObject registry out obj))
+      (.writeClassAndObject kryo out obj))
     (bytes->bb (.toByteArray bos))))
 
-(defn thread-local-kryos [kryo-factory]
-  (proxy [ThreadLocal] []
-    (initialValue []
-      (kryo-factory))))
+(defn kryos-pool [kryo-factory]
+  "Kryo objects pool with soft references to allow for GC when running out of memory"
+  (-> (proxy [KryoFactory] []
+        (create []
+          (kryo-factory)))
+      (KryoPool$Builder.)
+      .softReferences
+      .build))
+
+(defmacro with-kryos-pool [kryo-pool form]
+  "Inject a Kryo object from kryo-pool as the first parameter of form and run it"
+  (let [kryo-pool (vary-meta kryo-pool assoc :tag `KryoPool)]
+    `(let [kryo# (.borrow ~kryo-pool)
+           res# (-> kryo# ~form)]
+       (.release ~kryo-pool kryo#)
+       res#)))
 
 (defn carbonite-codec 
   ([]
-   (carbonite-codec (constantly (default-registry))))
+   (carbonite-codec (fn [] (default-registry))))
   ([kryo-factory]
-   (let [^ThreadLocal kryos (thread-local-kryos kryo-factory)]
+   (let [kryos (kryos-pool kryo-factory)]
      (proxy [RedisCodec] []
-       (decodeKey [bb]         
-         (kryo-read  (.get kryos) bb))
+       (decodeKey [bb]
+         (with-kryos-pool kryos (kryo-read bb)))
        (decodeValue [bb]
-         (kryo-read  (.get kryos) bb))
+         (with-kryos-pool kryos (kryo-read bb)))
        (encodeKey [k]
-         (kryo-write (.get kryos) k))
+         (with-kryos-pool kryos (kryo-write k)))
        (encodeValue [v]
-         (kryo-write (.get kryos) v))))))
+         (with-kryos-pool kryos (kryo-write v)))))))
 
 ;; Nippy based codec
 

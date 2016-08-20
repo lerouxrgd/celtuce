@@ -44,19 +44,25 @@
       (.writeClassAndObject registry out obj))
     (bytes->bb (.toByteArray bos))))
 
+(defn thread-local-kryos [kryo-factory]
+  (proxy [ThreadLocal] []
+    (initialValue []
+      (kryo-factory))))
+
 (defn carbonite-codec 
   ([]
-   (carbonite-codec (default-registry)))
-  ([registry]
-   (proxy [RedisCodec] []
-     (decodeKey [bb]
-       (kryo-read registry bb))
-     (decodeValue [bb]
-       (kryo-read registry bb))
-     (encodeKey [k]
-       (kryo-write (default-registry) k))
-     (encodeValue [v]
-       (kryo-write (default-registry) v)))))
+   (carbonite-codec (constantly (default-registry))))
+  ([kryo-factory]
+   (let [^ThreadLocal kryos (thread-local-kryos kryo-factory)]
+     (proxy [RedisCodec] []
+       (decodeKey [bb]         
+         (kryo-read  (.get kryos) bb))
+       (decodeValue [bb]
+         (kryo-read  (.get kryos) bb))
+       (encodeKey [k]
+         (kryo-write (.get kryos) k))
+       (encodeValue [v]
+         (kryo-write (.get kryos) v))))))
 
 ;; Nippy based codec
 

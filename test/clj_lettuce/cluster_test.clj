@@ -32,6 +32,16 @@
     (is (= #{"bar" 1 nil :b} 
            (into #{} (redis/hvals *cmds* "h")))))
 
+  (testing "hscan cursors"
+    (redis/hmset *cmds* "hl" (apply zipmap (split-at 5000 (range 10000))))
+    (let [cursor (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
+          result (redis/scan-res cursor)]
+      (is (= false (clj-lettuce.scan/finished? cursor)))
+      (is (= true (map? result)))
+      (is (= 10 (count result))))
+    ;; TODO also test match functionality
+    )
+
   (testing "delete and multi delete hash values"
     (redis/hmdel *cmds* "h" [:a :b "b"])
     (redis/hdel  *cmds* "h" 0)

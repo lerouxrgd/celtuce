@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get set])
   (:require [clj-lettuce.commands :refer :all])
   (:import [com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands]
+           [com.lambdaworks.redis ScanArgs ScanCursor]
            [java.util Map]))
 
 (extend-type RedisAdvancedClusterCommands
@@ -29,8 +30,15 @@
     (into (empty fs) (.hmget this k ^"[Ljava.lang.Object;" (into-array Object fs))))
   (hmset [this k ^Map m]
     (.hmset this k m))
-  (hscan [this k]
-    (.hscan this k))
+  (hscan 
+    ([this k]
+     (.hscan this k))
+    ([this k ^ScanCursor c]
+     (.hscan this k c))
+    ([this k ^ScanCursor c ^ScanArgs args]
+     (if (nil? c) 
+       (.hscan this k args)
+       (.hscan this k c args))))
   (hset [this k f v]
     (.hset this k f v))
   (hsetnx [this k f v]

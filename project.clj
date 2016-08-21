@@ -6,5 +6,6 @@
   :global-vars {*warn-on-reflection* true}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [biz.paluch.redis/lettuce "4.2.2.Final"]
-                 [com.twitter/carbonite "1.5.0"]
-                 [com.taoensso/nippy "2.12.1"]])
+                 [potemkin "0.4.3"]
+                 [com.taoensso/nippy "2.12.1"]
+                 [com.twitter/carbonite "1.5.0"]])

@@ -1,5 +1,11 @@
 (ns clj-lettuce.commands
+  (:require [potemkin :refer [import-vars]]
+            clj-lettuce.scan)
   (:refer-clojure :exclude [get set]))
+
+;;
+;; Redis clients 
+;;
 
 (defprotocol RedisConnector
   "Functions to manipulate Redis client and connections"
@@ -9,6 +15,19 @@
   (close-conn    [this])
   (shutdown      [this]))
 
+;; Functions to create records implementing RedisConnector
+;; TODO refactor this ns as core and then implement that ?
+#_
+(import-vars [clj-lettuce.cluster redis-cluster])
+
+;;
+;; Redis commands
+;;
+
+;; Functions to handle scan related commands
+(import-vars [clj-lettuce.scan scan-cursor scan-args scan-res])
+
+;; TODO refactor this functionality in RedisConnector?
 (defmulti commands
   "Redis commands implementation, depends on the client and connection type"
   (fn [type redis-connector] type))
@@ -26,7 +45,8 @@
   (hmdel        [this k fs]  "Delete multiple hash fields")
   (hmget        [this k fs]  "Get the values of all the given hash fields")
   (hmset        [this k m]   "Set multiple hash fields to multiple values")
-  (hscan        [this k]     "Incrementally iterate hash fields and associated values")
+  (hscan        [this k] [this k c] [this k c args]
+                             "Incrementally iterate hash fields and associated values")
   (hset         [this k f v] "Set the string value of a hash field")
   (hsetnx       [this k f v] "Set the value of a hash field, only if it doesn't exist")
   (hstrlen      [this k f]   "Get the string length of the field value in a hash")

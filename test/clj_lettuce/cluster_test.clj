@@ -25,12 +25,13 @@
     (is (= nil   (redis/hget    *cmds* "h" :dont-exist)))
     (is (= false (redis/hsetnx  *cmds* "h" :a :a)))
     (is (= "bar" (redis/hget    *cmds* "h" :foo)))
+    (is (= ["bar" 1 nil :b nil] (redis/hmget *cmds* "h" [:foo :a 0 "b" :dont-exist])))
     (is (= {:foo "bar" :a 1 0 nil "b" :b} (redis/hgetall *cmds* "h")))
     (is (= #{:foo :a 0 "b"} 
            (into #{} (redis/hkeys *cmds* "h"))))
     (is (= #{"bar" 1 nil :b} 
            (into #{} (redis/hvals *cmds* "h")))))
-  
+
   (testing "delete and multi delete hash values"
     (redis/hmdel *cmds* "h" [:a :b "b"])
     (redis/hdel  *cmds* "h" 0)

@@ -30,10 +30,8 @@
 
 (defmethod commands :cluster-sync 
   [type redis-connector]
-  "Returns RedisAdvancedClusterCommands"
   (.sync ^StatefulRedisClusterConnection (stateful-conn redis-connector)))
 
 (defmethod commands :cluster-async
   [type redis-connector]
-  "Returns RedisAdvancedClusterAsyncCommands"
   (.async ^StatefulRedisClusterConnection (stateful-conn redis-connector)))

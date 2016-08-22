@@ -3,34 +3,7 @@
             clj-lettuce.scan)
   (:refer-clojure :exclude [get set]))
 
-;;
-;; Redis clients 
-;;
-
-(defprotocol RedisConnector
-  "Functions to manipulate Redis client and connections"
-  (redis-cli     [this])
-  (stateful-conn [this])
-  (conn-open?    [this])
-  (close-conn    [this])
-  (shutdown      [this]))
-
-;; Functions to create records implementing RedisConnector
-;; TODO refactor this ns as core and then implement that ?
-#_
-(import-vars [clj-lettuce.cluster redis-cluster])
-
-;;
-;; Redis commands
-;;
-
-;; Functions to handle scan related commands
 (import-vars [clj-lettuce.scan scan-cursor scan-args scan-res])
-
-;; TODO refactor this functionality in RedisConnector?
-(defmulti commands
-  "Redis commands implementation, depends on the client and connection type"
-  (fn [type redis-connector] type))
 
 (defprotocol HashCommands
   "Redis Hash Commands"

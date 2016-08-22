@@ -1,17 +1,16 @@
 (ns clj-lettuce.cluster-test
   (:require [clojure.test :refer :all]
             [clj-lettuce.commands :as redis]
-            [clj-lettuce.cluster :refer [redis-cluster]]))
+            [clj-lettuce.connector :as conn]))
 
 (def ^:dynamic *cmds*)
 
 (defn cmds-fixture [test-function]
-  (let [rclust (redis-cluster "redis://localhost:30001")]
-    (binding [*cmds* (redis/commands :cluster-sync rclust)]
+  (let [rclust (conn/redis-cluster "redis://localhost:30001")]
+    (binding [*cmds* (conn/commands-sync rclust)]
       (redis/flushall *cmds*)
       (try (test-function)
-           (finally (redis/close-conn rclust)
-                    (redis/shutdown   rclust))))))
+           (finally (conn/shutdown rclust))))))
 
 (use-fixtures :once cmds-fixture)
 

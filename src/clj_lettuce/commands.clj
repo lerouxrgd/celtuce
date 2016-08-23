@@ -3,7 +3,7 @@
             clj-lettuce.scan)
   (:refer-clojure :exclude [get set]))
 
-(import-vars [clj-lettuce.scan scan-cursor scan-args scan-res])
+(import-vars [clj-lettuce.scan scan-cursor scan-args scan-res scan-seq])
 
 (defprotocol HashCommands
   "Redis Hash Commands"

@@ -1,6 +1,6 @@
 (ns clj-lettuce.scan
   (:import [com.lambdaworks.redis ScanArgs ScanCursor
-            MapScanCursor KeyScanCursor ValueScanCursor ScoredValueScanCursor]))
+            KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor]))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
@@ -8,20 +8,16 @@
     (not= nil match) (.match ^String match)))
 
 (defprotocol PScanCursor
-  (get-cursor   [this]          "Get the String cursor id")
-  (set-cursor   [this cursor]   "Set the String cusor id")
-  (finished?    [this]          "True if the scan operation of this cursor is finished")
-  (set-finished [this finished] "Set finished value (Boolean) of this cursor"))
+  (get-cursor [this] "Get the String cursor id")
+  (finished?  [this] "True if the scan operation of this cursor is finished"))
 
 (defprotocol PScanResult
   (scan-res [this] "Get the data contained in a scan cursor result"))
 
 (extend-type ScanCursor
   PScanCursor
-  (get-cursor   [this]   (.getCursor   this))
-  (set-cursor   [this c] (.setCursor   this c))
-  (finished?    [this]   (.isFinished  this))
-  (set-finished [this f] (.setFinished this f)))
+  (get-cursor [this] (.getCursor  this))
+  (finished?  [this] (.isFinished this)))
 
 (extend-protocol PScanResult
   MapScanCursor
@@ -34,6 +30,17 @@
    (doto (ScanCursor.)
      (.setCursor cursor))))
 
-;; TODO lazy-seq (immutable cursors?) to realize full scan
-#_
-(defn scan-seq)
+(defn scan-seq* [scan-fn cursor args]
+  (let [cursor (or cursor (scan-cursor))
+        res (if args (scan-fn cursor args) (scan-fn cursor))]
+    (lazy-seq (cons (scan-res res)
+                    (scan-seq* scan-fn (scan-cursor (get-cursor res)) args)))))
+
+(defmacro scan-seq 
+  "Takes a scan command form (scan, sscan, hscan, zscan) 
+  with optionals ScanCursor c and ScanArgs args, 
+  and returns a lazy seq that calls scan-res on each iteration result."
+  [scan-form]
+  (let [[scan-cmd this k c args] scan-form]
+    `(scan-seq* (partial ~scan-cmd ~this ~k) ~c ~args)))
+

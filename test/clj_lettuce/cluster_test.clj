@@ -31,20 +31,6 @@
     (is (= #{"bar" 1 nil :b} 
            (into #{} (redis/hvals *cmds* "h")))))
 
-  (testing "hscan cursors"
-    (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
-    (let [cursor (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
-          result (redis/scan-res cursor)]
-      (is (= false (clj-lettuce.scan/finished? cursor)))
-      (is (= true (map? result)))
-      (is (= 10 (count result))))
-    (redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
-    (let [cursor (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
-          result (redis/scan-res cursor)]
-      (is (= true (clj-lettuce.scan/finished? cursor)))
-      (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
-             result))))
-
   (testing "delete and multi delete hash values"
     (redis/hmdel *cmds* "h" [:a :b "b"])
     (redis/hdel  *cmds* "h" 0)
@@ -57,7 +43,27 @@
     (is (= 1   (redis/hincrby      *cmds* "h" :x 1)))
     (is (= 10  (redis/hincrby      *cmds* "h" :x 9)))
     (is (= 1.0 (redis/hincrbyfloat *cmds* "h" :y 1)))
-    (is (= 3.0 (redis/hincrbyfloat *cmds* "h" :y 2.0)))))
+    (is (= 3.0 (redis/hincrbyfloat *cmds* "h" :y 2.0))))
+  
+  (testing "hscan cursors"
+    (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
+    (let [cursor (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
+          result (redis/scan-res cursor)]
+      (is (= false (clj-lettuce.scan/finished? cursor)))
+      (is (= true (map? result)))
+      (is (= 10 (count result))))
+    (let [els (->> (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 50))
+                   (redis/scan-seq) 
+                   (take 100))]
+      (is (= 100 (count els)))
+      (is (= (redis/hgetall *cmds* "hl")
+             (apply merge els))))
+    (redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
+    (let [cursor (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
+          result (redis/scan-res cursor)]
+      (is (= true (clj-lettuce.scan/finished? cursor)))
+      (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
+             result)))))
 
 (deftest string-commands-test
 

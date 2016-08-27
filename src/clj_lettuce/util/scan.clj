@@ -1,11 +1,11 @@
-(ns clj-lettuce.scan
+(ns clj-lettuce.util.scan
   (:import [com.lambdaworks.redis ScanArgs ScanCursor
             KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor]))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
-    (not= nil limit) (.limit (long limit))
-    (not= nil match) (.match ^String match)))
+    limit (.limit (long limit))
+    match (.match ^String match)))
 
 (defprotocol PScanCursor
   (get-cursor [this] "Get the String cursor id")

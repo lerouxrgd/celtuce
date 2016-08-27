@@ -1,9 +1,11 @@
 (ns clj-lettuce.commands
   (:require [potemkin :refer [import-vars]]
-            clj-lettuce.scan)
+            clj-lettuce.util.scan
+            clj-lettuce.util.migrate)
   (:refer-clojure :exclude [get set keys sort type]))
 
-(import-vars [clj-lettuce.scan scan-cursor scan-args scan-res scan-seq])
+(import-vars [clj-lettuce.util.scan scan-cursor scan-args scan-res scan-seq])
+(import-vars [clj-lettuce.util.migrate migrate-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -27,16 +29,20 @@
 
 (defprotocol KeysCommands
   "Redis Keys Commands"
-  (del [this k]) ;; TODO m
-  (unlink [this k]) ;; TODO m
+  (del [this k])
+  (unlink [this k])
   (dump [this k])
-  (exists [this k]) ;; TODO m
+  (exists [this k])
   (expire [this k sec])
   (expireat [this k ts-sec])
   (keys [this pattern])
-  (migrate [this h p k db ms] [this h p k db ms args])
-  (move [this k db])
-  (object [this]) ;; TODO ???
+  (mdel [this ks])
+  (mexists [this ks])
+  (migrate [this h p db ms args])
+  (move [this k db]) ;; TODO ???
+  (mtouch [this ks])
+  (munlink [this ks])
+  (object [this])
   (persist [this k])
   (pexpire [this k ms])
   (pexpireat [this k ts-ms])
@@ -47,7 +53,7 @@
   (restore [this k ttl v])
   (sort [this k] [this k args])
   (sortstore [this k1 args k2])
-  (touch [this k]) ;; TODO m
+  (touch [this k])
   (ttl [this k])
   (type [this k])
   (scan [this] [this c] [this c args]))

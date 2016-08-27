@@ -49,7 +49,7 @@
     (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
     (let [cursor (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           result (redis/scan-res cursor)]
-      (is (= false (clj-lettuce.scan/finished? cursor)))
+      (is (= false (clj-lettuce.util.scan/finished? cursor)))
       (is (= true (map? result)))
       (is (<= 10 (count result) 15)))
     (let [els (->> (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 50))
@@ -61,7 +61,7 @@
     (redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
     (let [cursor (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           result (redis/scan-res cursor)]
-      (is (= true (clj-lettuce.scan/finished? cursor)))
+      (is (= true (clj-lettuce.util.scan/finished? cursor)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              result)))))
 

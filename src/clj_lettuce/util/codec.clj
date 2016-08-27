@@ -1,4 +1,4 @@
-(ns clj-lettuce.codec
+(ns clj-lettuce.util.codec
   (:import [com.lambdaworks.redis.codec 
             RedisCodec Utf8StringCodec ByteArrayCodec 
             CompressionCodec CompressionCodec$CompressionType]

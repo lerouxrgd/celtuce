@@ -41,6 +41,16 @@
   with optionals ScanCursor c and ScanArgs args, 
   and returns a lazy seq that calls scan-res on each iteration result."
   [scan-form]
-  (let [[scan-cmd this k c args] scan-form]
-    `(scan-seq* (partial ~scan-cmd ~this ~k) ~c ~args)))
+  (let [[scan-cmd this a1 a2 a3] scan-form]
+    `(cond 
+       ;; scan-cmd is SCAN
+       (or (every? nil? [~a1 ~a1 ~a2]) (instance? ScanCursor ~a1))
+       (scan-seq* (partial ~scan-cmd ~this) ~a1 ~a2)
+       ;; scan-cmd is SSCAN, HSCAN, or ZSCAN
+       (not= nil ~a1)
+       (scan-seq* (partial ~scan-cmd ~this ~a1) ~a2 ~a3)
+       ;; invalid arguments for the given scan-cmd
+       :else (ex-info (->> ["invalid arguments" '~a1 '~a2 '~a3 "for" '~scan-cmd] 
+                           (interpose " ")
+                           (apply str))))))
 

@@ -51,7 +51,7 @@
           result (redis/scan-res cursor)]
       (is (= false (clj-lettuce.scan/finished? cursor)))
       (is (= true (map? result)))
-      (is (= 10 (count result))))
+      (is (<= 10 (count result) 15)))
     (let [els (->> (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 50))
                    (redis/scan-seq) 
                    (take 100))]

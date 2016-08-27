@@ -1,7 +1,7 @@
 (ns clj-lettuce.commands
   (:require [potemkin :refer [import-vars]]
             clj-lettuce.scan)
-  (:refer-clojure :exclude [get set]))
+  (:refer-clojure :exclude [get set keys sort type]))
 
 (import-vars [clj-lettuce.scan scan-cursor scan-args scan-res scan-seq])
 
@@ -24,6 +24,33 @@
   (hsetnx       [this k f v] "Set the value of a hash field, only if it doesn't exist")
   (hstrlen      [this k f]   "Get the string length of the field value in a hash")
   (hvals        [this k]     "Get all the values in a hash"))
+
+(defprotocol KeysCommands
+  "Redis Keys Commands"
+  (del [this k]) ;; TODO m
+  (unlink [this k]) ;; TODO m
+  (dump [this k])
+  (exists [this k]) ;; TODO m
+  (expire [this k sec])
+  (expireat [this k ts-sec])
+  (keys [this pattern])
+  (migrate [this h p k db ms] [this h p k db ms args])
+  (move [this k db])
+  (object [this]) ;; TODO ???
+  (persist [this k])
+  (pexpire [this k ms])
+  (pexpireat [this k ts-ms])
+  (pttl [this k])
+  (randomkey [this])
+  (rename [this k1 k2])
+  (renamenx [this k1 k2])
+  (restore [this k ttl v])
+  (sort [this k] [this k args])
+  (sortstore [this k1 args k2])
+  (touch [this k]) ;; TODO m
+  (ttl [this k])
+  (type [this k])
+  (scan [this] [this c] [this c args]))
 
 (defprotocol StringsCommands
   "Redis Strings Commands"

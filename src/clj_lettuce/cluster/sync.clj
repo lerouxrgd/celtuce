@@ -1,5 +1,5 @@
 (ns clj-lettuce.cluster.sync
-  (:refer-clojure :exclude [get set])
+  (:refer-clojure :exclude [get set keys sort type])
   (:require [clj-lettuce.commands :refer :all])
   (:import [com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands]
            [com.lambdaworks.redis ScanArgs ScanCursor]
@@ -36,9 +36,7 @@
     ([this k ^ScanCursor c]
      (.hscan this k c))
     ([this k ^ScanCursor c ^ScanArgs args]
-     (if (nil? c) 
-       (.hscan this k args)
-       (.hscan this k c args))))
+     (.hscan this k c args)))
   (hset [this k f v]
     (.hset this k f v))
   (hsetnx [this k f v]

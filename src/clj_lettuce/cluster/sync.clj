@@ -1,9 +1,11 @@
 (ns clj-lettuce.cluster.sync
   (:refer-clojure :exclude [get set keys sort type])
-  (:require [clj-lettuce.commands :refer :all])
-  (:import [com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands]
-           [com.lambdaworks.redis ScanArgs ScanCursor MigrateArgs SortArgs]
-           [java.util Map]))
+  (:require 
+   [clj-lettuce.commands :refer :all])
+  (:import 
+   (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
+   (com.lambdaworks.redis ScanArgs ScanCursor MigrateArgs SortArgs)
+   (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
   

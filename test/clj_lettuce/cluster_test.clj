@@ -1,7 +1,8 @@
 (ns clj-lettuce.cluster-test
-  (:require [clojure.test :refer :all]
-            [clj-lettuce.commands :as redis]
-            [clj-lettuce.connector :as conn]))
+  (:require 
+   [clojure.test :refer :all]
+   [clj-lettuce.commands :as redis]
+   [clj-lettuce.connector :as conn]))
 
 (def ^:dynamic *cmds*)
 

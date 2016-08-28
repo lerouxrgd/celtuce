@@ -1,14 +1,16 @@
 (ns clj-lettuce.util.codec
-  (:import [com.lambdaworks.redis.codec 
-            RedisCodec Utf8StringCodec ByteArrayCodec 
-            CompressionCodec CompressionCodec$CompressionType]
-           [java.io ByteArrayOutputStream ByteArrayInputStream]
-           [java.nio ByteBuffer]
-           [com.esotericsoftware.kryo Kryo]
-           [com.esotericsoftware.kryo.io Output Input]
-           [com.esotericsoftware.kryo.pool KryoFactory KryoPool KryoPool$Builder])
-  (:require [carbonite.api :refer [default-registry]]
-            [taoensso.nippy :as nippy]))
+  (:require 
+   [carbonite.api :refer [default-registry]]
+   [taoensso.nippy :as nippy])
+  (:import 
+   (com.lambdaworks.redis.codec 
+    RedisCodec Utf8StringCodec ByteArrayCodec 
+    CompressionCodec CompressionCodec$CompressionType)
+   (java.io ByteArrayOutputStream ByteArrayInputStream)
+   (java.nio ByteBuffer)
+   (com.esotericsoftware.kryo Kryo)
+   (com.esotericsoftware.kryo.io Output Input)
+   (com.esotericsoftware.kryo.pool KryoFactory KryoPool KryoPool$Builder)))
 
 (defn bb->bytes [^ByteBuffer bb]
   (let [bytes (byte-array (.remaining bb))]

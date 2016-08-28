@@ -1,9 +1,11 @@
 (ns clj-lettuce.connector
-  (:require [clj-lettuce.util.codec :refer [nippy-codec]])
-  (:import [java.util.concurrent TimeUnit]
-           [com.lambdaworks.redis.codec RedisCodec]
-           [com.lambdaworks.redis.cluster RedisClusterClient]
-           [com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection]))
+  (:require 
+   [clj-lettuce.util.codec :refer [nippy-codec]])
+  (:import 
+   (java.util.concurrent TimeUnit)
+   (com.lambdaworks.redis.codec RedisCodec)
+   (com.lambdaworks.redis.cluster RedisClusterClient)
+   (com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection)))
 
 (defprotocol RedisConnector
   ""  

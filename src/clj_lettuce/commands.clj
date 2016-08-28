@@ -1,11 +1,14 @@
 (ns clj-lettuce.commands
-  (:require [potemkin :refer [import-vars]]
-            clj-lettuce.util.scan
-            clj-lettuce.util.migrate)
-  (:refer-clojure :exclude [get set keys sort type]))
+  (:refer-clojure :exclude [get set keys sort type])
+  (:require 
+   [potemkin :refer [import-vars]]
+   [clj-lettuce.util.scan]
+   [clj-lettuce.util.migrate]))
 
-(import-vars [clj-lettuce.util.scan scan-cursor scan-args scan-res scan-seq])
-(import-vars [clj-lettuce.util.migrate migrate-args])
+(import-vars [clj-lettuce.util.scan 
+              scan-cursor scan-args scan-res scan-seq])
+(import-vars [clj-lettuce.util.migrate 
+              migrate-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"

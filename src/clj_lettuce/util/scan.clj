@@ -1,6 +1,8 @@
 (ns clj-lettuce.util.scan
-  (:import [com.lambdaworks.redis ScanArgs ScanCursor
-            KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor]))
+  (:import 
+   (com.lambdaworks.redis 
+    ScanArgs ScanCursor
+    KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor)))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
   (cond-> (ScanArgs.)

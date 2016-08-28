@@ -1,5 +1,6 @@
 (ns clj-lettuce.util.migrate
-  (:import [com.lambdaworks.redis MigrateArgs]))
+  (:import 
+   (com.lambdaworks.redis MigrateArgs)))
 
 (defn migrate-args [& {copy :copy replace :replace k :key ks :keys}]
   {:pre [(or (and (not= nil k)  (nil? ks))

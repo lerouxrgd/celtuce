@@ -3,12 +3,15 @@
   (:require 
    [potemkin :refer [import-vars]]
    [clj-lettuce.util.scan]
-   [clj-lettuce.util.migrate]))
+   [clj-lettuce.util.migrate]
+   [clj-lettuce.util.sort]))
 
 (import-vars [clj-lettuce.util.scan 
               scan-cursor scan-args scan-res scan-seq])
 (import-vars [clj-lettuce.util.migrate 
               migrate-args])
+(import-vars [clj-lettuce.util.sort
+              sort-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -32,34 +35,39 @@
 
 (defprotocol KeysCommands
   "Redis Keys Commands"
-  (del [this k])
-  (unlink [this k])
-  (dump [this k])
-  (exists [this k])
-  (expire [this k sec])
-  (expireat [this k ts-sec])
-  (keys [this pattern])
-  (mdel [this ks])
-  (mexists [this ks])
-  (migrate [this h p db ms args])
-  (move [this k db]) ;; TODO ???
-  (mtouch [this ks])
-  (munlink [this ks])
-  (object [this])
-  (persist [this k])
-  (pexpire [this k ms])
-  (pexpireat [this k ts-ms])
-  (pttl [this k])
-  (randomkey [this])
-  (rename [this k1 k2])
-  (renamenx [this k1 k2])
-  (restore [this k ttl v])
-  (sort [this k] [this k args])
-  (sortstore [this k1 args k2])
-  (touch [this k])
-  (ttl [this k])
-  (type [this k])
-  (scan [this] [this c] [this c args]))
+  (del             [this k]        "Delete one key")
+  (unlink          [this k]        "Unlink one key (non blocking DEL)")
+  (dump            [this k]        "Serialized version of the value stored at the key")
+  (exists          [this k]        "Determine whether key exists")
+  (expire          [this k sec]    "Set a key's time to live in seconds")
+  (expireat        [this k ts-sec] "Set the expiration for a key as a UNIX timestamp")
+  (keys            [this pattern]  "Find all keys matching the given pattern")
+  (mdel            [this ks]       "Delete multiple keys")
+  (mexists         [this ks]       "Determine how many keys exist")
+  (migrate         [this h p db ms args] 
+                                   "Transfer a key from a Redis instance to another one")
+  (move            [this k db]     "Move a key to another database")
+  (mtouch          [this ks]       "Touch multiple keys. Sets the keys last accessed time")
+  (munlink         [this ks]       "Unlink multiple keys (non blocking DEL)")
+  (object-encoding [this k]        "Internal representation used to store the key's value")
+  (object-idletime [this k]        "Number of sec the key's value is idle (no read/write)")
+  (object-refcount [this k]        "Number of references of the key's value")
+  (persist         [this k]        "Remove the expiration from a key")
+  (pexpire         [this k ms]     "Set a key's time to live in milliseconds")
+  (pexpireat       [this k ts-ms]  "Set the expiration for a key as a UNIX timestamp in ms")
+  (pttl            [this k]        "Get the time to live for a key in milliseconds")
+  (randomkey       [this]          "Return a random key from the keyspace")
+  (rename          [this k1 k2]    "Rename a key")
+  (renamenx        [this k1 k2]    "Rename a key, only if the new key does not exist")
+  (restore         [this k ttl v]  "Create a key using a serialized value obtained by DUMP")
+  (sort            [this k] [this k args]
+                                   "Sort the elements in a list, set or sorted set")
+  (sort-store      [this k args d] "Sort and store the result in destination key")
+  (touch           [this k]        "Touch one key. Sets the key last accessed time")
+  (ttl             [this k]        "Get the time to live for a key")
+  (type            [this k]        "Determine the type stored at key")
+  (scan            [this] [this c] [this c args] 
+                                   "Incrementally iterate the keys space"))
 
 (defprotocol StringsCommands
   "Redis Strings Commands"

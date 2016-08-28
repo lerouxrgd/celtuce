@@ -73,8 +73,12 @@
     (.touch this (into-array Object ks)))
   (munlink [this ks]
     (.unlink this (into-array Object ks)))
-  (object [this]
-    )
+  (object-encoding [this k]
+    (.objectEncoding this k))
+  (object-idletime [this k]
+    (.objectIdletime this k))
+  (object-refcount [this k]
+    (.objectRefcount this k))
   (persist [this k]
     (.persist this k))
   (pexpire [this k ^long ms]
@@ -103,8 +107,8 @@
      (.sort this k)) 
     ([this k ^SortArgs args]
      (.sort this k args)))
-  (sortstore [this k1 ^SortArgs args k2]
-    (.sortStore this k1 args k2))
+  (sort-store [this k ^SortArgs args d]
+    (.sortStore this k args d))
   (touch [this k]
     (.touch this (into-array Object [k])))
   (ttl [this k]

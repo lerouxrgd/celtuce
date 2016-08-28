@@ -2,16 +2,13 @@
   (:refer-clojure :exclude [get set keys sort type])
   (:require 
    [potemkin :refer [import-vars]]
-   [clj-lettuce.util.scan]
-   [clj-lettuce.util.migrate]
-   [clj-lettuce.util.sort]))
+   [clj-lettuce.args.scan]
+   [clj-lettuce.args.migrate]
+   [clj-lettuce.args.sort]))
 
-(import-vars [clj-lettuce.util.scan 
-              scan-cursor scan-args scan-res scan-seq])
-(import-vars [clj-lettuce.util.migrate 
-              migrate-args])
-(import-vars [clj-lettuce.util.sort
-              sort-args])
+(import-vars [clj-lettuce.args.scan    scan-cursor scan-args scan-res scan-seq])
+(import-vars [clj-lettuce.args.migrate migrate-args])
+(import-vars [clj-lettuce.args.sort    sort-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"

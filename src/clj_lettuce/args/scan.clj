@@ -1,4 +1,4 @@
-(ns clj-lettuce.util.scan
+(ns clj-lettuce.args.scan
   (:import 
    (com.lambdaworks.redis 
     ScanArgs ScanCursor

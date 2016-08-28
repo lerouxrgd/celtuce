@@ -1,6 +1,6 @@
 (ns clj-lettuce.connector
   (:require 
-   [clj-lettuce.util.codec :refer [nippy-codec]])
+   [clj-lettuce.codec :refer [nippy-codec]])
   (:import 
    (java.util.concurrent TimeUnit)
    (com.lambdaworks.redis.codec RedisCodec)

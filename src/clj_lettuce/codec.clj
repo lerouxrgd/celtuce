@@ -1,4 +1,4 @@
-(ns clj-lettuce.util.codec
+(ns clj-lettuce.codec
   (:require 
    [carbonite.api :refer [default-registry]]
    [taoensso.nippy :as nippy])

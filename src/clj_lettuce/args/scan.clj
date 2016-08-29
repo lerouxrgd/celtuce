@@ -23,7 +23,9 @@
 
 (extend-protocol PScanResult
   MapScanCursor
-  (scan-res [this] (into {} (.getMap this))))
+  (scan-res [this] (into {} (.getMap this)))
+  KeyScanCursor
+  (scan-res [this] (into [] (.getKeys this))))
 
 (defn ^ScanCursor scan-cursor 
   ([]
@@ -33,10 +35,10 @@
      (.setCursor cursor))))
 
 (defn scan-seq* [scan-fn cursor args]
-  (let [cursor (or cursor (scan-cursor))
-        res (if args (scan-fn cursor args) (scan-fn cursor))]
-    (lazy-seq (cons (scan-res res)
-                    (scan-seq* scan-fn (scan-cursor (get-cursor res)) args)))))
+  (when-not (finished? cursor)
+    (let [cursor-res (if args (scan-fn cursor args) (scan-fn cursor))]
+      (lazy-seq (cons (scan-res cursor-res)
+                      (scan-seq* scan-fn cursor-res args))))))
 
 (defmacro scan-seq 
   "Takes a scan command form (scan, sscan, hscan, zscan) 
@@ -47,10 +49,10 @@
     `(cond 
        ;; scan-cmd is SCAN
        (or (every? nil? [~a1 ~a1 ~a2]) (instance? ScanCursor ~a1))
-       (scan-seq* (partial ~scan-cmd ~this) ~a1 ~a2)
+       (scan-seq* (partial ~scan-cmd ~this) (or ~a1 (scan-cursor)) ~a2)
        ;; scan-cmd is SSCAN, HSCAN, or ZSCAN
        (not= nil ~a1)
-       (scan-seq* (partial ~scan-cmd ~this ~a1) ~a2 ~a3)
+       (scan-seq* (partial ~scan-cmd ~this ~a1) (or ~a2 (scan-cursor)) ~a3)
        ;; invalid arguments for the given scan-cmd
        :else (ex-info (->> ["invalid arguments" '~a1 '~a2 '~a3 "for" '~scan-cmd] 
                            (interpose " ")

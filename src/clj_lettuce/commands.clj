@@ -30,8 +30,8 @@
   (hstrlen      [this k f]   "Get the string length of the field value in a hash")
   (hvals        [this k]     "Get all the values in a hash"))
 
-(defprotocol KeysCommands
-  "Redis Keys Commands"
+(defprotocol KeyCommands
+  "Redis Key Commands"
   (del             [this k]        "Delete one key")
   (unlink          [this k]        "Unlink one key (non blocking DEL)")
   (dump            [this k]        "Serialized version of the value stored at the key")

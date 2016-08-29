@@ -48,23 +48,23 @@
   (hvals [this k]
     (into [] (.hvals this k)))
 
-  KeysCommands
+  KeyCommands
   (del [this k]
     (.del this (into-array Object [k])))
   (dump [this k]
     (.dump this k))
   (exists [this k]
-    (.exists this (into-array Object [k])))
+    (.exists this ^"[Ljava.lang.Object;" (into-array Object [k])))
   (expire [this k ^long sec]
     (.expire this k sec))
   (expireat [this k ts-sec]
     (.expire this k ^long ts-sec))
   (keys [this pattern]
-    (.keys this pattern))
+    (into [] (.keys this pattern)))
   (mdel [this ks]
     (.del this (into-array Object ks)))
   (mexists [this ks]
-    (.exists this (into-array Object ks)))
+    (.exists this ^"[Ljava.lang.Object;" (into-array Object ks)))
   (migrate [this ^String h ^Integer p ^Integer db ^Long ms ^MigrateArgs args]
     (.migrate this h p db ms args))
   (move [this k ^Integer db]

@@ -9,11 +9,15 @@
 (defn cmds-fixture [test-function]
   (let [rclust (conn/redis-cluster "redis://localhost:30001")]
     (binding [*cmds* (conn/commands-sync rclust)]
-      (redis/flushall *cmds*)
       (try (test-function)
            (finally (conn/shutdown rclust))))))
 
+(defn flush-fixture [test-function]
+  (redis/flushall *cmds*)
+  (test-function))
+
 (use-fixtures :once cmds-fixture)
+(use-fixtures :each flush-fixture)
 
 (deftest hash-commands-test
   
@@ -48,23 +52,38 @@
   
   (testing "hscan cursors"
     (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
-    (let [cursor (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
-          result (redis/scan-res cursor)]
-      (is (= false (clj-lettuce.args.scan/finished? cursor)))
-      (is (= true (map? result)))
-      (is (<= 10 (count result) 15)))
-    (let [els (->> (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 50))
+    (let [cur (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
+          res (redis/scan-res cur)]
+      (is (= false (clj-lettuce.args.scan/finished? cur)))
+      (is (= true (map? res)))
+      (is (<= 8 (count res) 12))) ;; about 10
+    (let [els (->> (redis/scan-args :limit 50)
+                   (redis/hscan *cmds* "hl" (redis/scan-cursor))
                    (redis/scan-seq) 
                    (take 100))]
-      (is (= 100 (count els)))
+      (is (<= 95 (count els) 105)) ;; about 100
       (is (= (redis/hgetall *cmds* "hl")
              (apply merge els))))
     (redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
-    (let [cursor (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
-          result (redis/scan-res cursor)]
-      (is (= true (clj-lettuce.args.scan/finished? cursor)))
+    (let [cur (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
+          res (redis/scan-res cur)]
+      (is (= true (clj-lettuce.args.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
-             result)))))
+             res)))))
+
+(deftest key-commands-test
+  
+  (testing "basic key checks"
+    (redis/hmset *cmds* "h" {:foo "bar" :a 1 0 nil})
+    (is (= ["h"] (redis/keys *cmds* "h")))
+    (is (= ["h"] (->> (redis/scan-seq (redis/scan *cmds*)) 
+                      (apply concat)
+                      (into []))))
+    (is (= 1 (redis/exists *cmds* "h")))
+    (is (= 1 (redis/mexists *cmds* ["h" :dont-exist])))
+    )
+  
+  )
 
 (deftest string-commands-test
 

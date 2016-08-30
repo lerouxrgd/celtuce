@@ -68,9 +68,33 @@
 
 (defprotocol StringsCommands
   "Redis Strings Commands"
-  (get  [this k]   "Get the value of a key")
-  (set  [this k v] "Set the string value of a key")
-  (mget [this ks]  "Get the values of all the given keys"))
+  (append [this k v])
+  (bitcount [this k])
+  (bitfield [this k args])
+  (bitop-and [this d ks])
+  (bitop-not [this d k])
+  (bitop-or [this d ks])
+  (bitop-xor [this d ks])
+  (bitpos [this k state] [this k state s e])
+  (decr [this k])
+  (decrby [this k a])
+  (get [this k])
+  (getbit [this k o])
+  (getrange [this k s e])
+  (getset [this k v])
+  (incr [this k])
+  (incrby [this k a])
+  (incrbyfloat [this k a])
+  (mget [this ks])
+  (mset [this m])
+  (msetnx [this m])
+  (set [this k v])
+  (setbit [this k o v])
+  (setex [this k sec v])
+  (psetex [this k ms v])
+  (setnx [this k v])
+  (setrange [k o v])
+  (strlen [this k]))
 
 (defprotocol ServerCommands
   "Redis Server Commands"

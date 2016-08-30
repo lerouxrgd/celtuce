@@ -73,11 +73,11 @@
     (.touch this (into-array Object ks)))
   (munlink [this ks]
     (.unlink this (into-array Object ks)))
-  (object-encoding [this k]
+  (obj-encoding [this k]
     (.objectEncoding this k))
-  (object-idletime [this k]
+  (obj-idletime [this k]
     (.objectIdletime this k))
-  (object-refcount [this k]
+  (obj-refcount [this k]
     (.objectRefcount this k))
   (persist [this k]
     (.persist this k))

@@ -74,16 +74,29 @@
 (deftest key-commands-test
   
   (testing "basic key checks"
-    (redis/hmset *cmds* "h" {:foo "bar" :a 1 0 nil})
+    (redis/hmset *cmds* "h" {:foo "bar" :a 1 "b" :b})
+    (is (= 1 (redis/exists   *cmds* "h")))
+    (is (= 1 (redis/mexists  *cmds* ["h" :dont-exist])))
     (is (= ["h"] (redis/keys *cmds* "h")))
     (is (= ["h"] (->> (redis/scan-seq (redis/scan *cmds*)) 
                       (apply concat)
                       (into []))))
-    (is (= 1 (redis/exists *cmds* "h")))
-    (is (= 1 (redis/mexists *cmds* ["h" :dont-exist])))
-    )
+    (is (= "hash" (redis/type *cmds* "h"))))
   
-  )
+  (testing "ttl related"
+    (is (= -1 (redis/ttl *cmds* "h")))
+    (redis/expire *cmds* "h" 1)
+    (is (> 1001 (redis/pttl *cmds* "h") 0))
+    (redis/persist *cmds* "h")
+    (is (= -1 (redis/pttl *cmds* "h"))))
+  
+  (testing "dump/restore and delete"
+    (let [dump (redis/dump *cmds* "h")]
+      (redis/del *cmds* "h")
+      (is (= 0 (redis/exists *cmds* "h")))
+      (redis/restore *cmds* "h" 0 dump)
+      (is (= 1 (redis/exists *cmds* "h")))
+      (is (= {:foo "bar" :a 1 "b" :b} (redis/hgetall *cmds* "h"))))))
 
 (deftest string-commands-test
 

@@ -4,7 +4,8 @@
    [clj-lettuce.commands :refer :all])
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
-   (com.lambdaworks.redis ScanArgs ScanCursor MigrateArgs SortArgs)
+   (com.lambdaworks.redis 
+    ScanArgs ScanCursor MigrateArgs SortArgs BitFieldArgs SetArgs)
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
@@ -119,13 +120,67 @@
     (.unlink this (into-array Object [k])))
 
   StringsCommands
-  (get [this k] 
+  (append [this k v]
+    (.append this k v))
+  (bitcount [this k]
+    (.bitcount this k))
+  (bitfield [this k ^BitFieldArgs args]
+    (.bitfield this k args))
+  (bitop-and [this d ks]
+    (.bitopAnd this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+  (bitop-not [this d k]
+    (.bitopNot this d k))
+  (bitop-or [this d ks]
+    (.bitopOr this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+  (bitop-xor [this d ks]
+    (.bitopXor this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+  (bitpos 
+    ([this k ^Boolean state]
+     (.bitpos this k state)) 
+    ([this k ^Boolean state ^Long s ^Long e]
+     (.bitpos this k state s e)))
+  (decr [this k]
+    (.decr this k))
+  (decrby [this k ^long a]
+    (.decrby this k a))
+  (get [this k]
     (.get this k))
-  (set [this k v] 
-    (.set this k v))
-  (mget [this ks] 
+  (getbit [this k ^long o]
+    (.getbit this k o))
+  (getrange [this k ^long s ^long e]
+    (.getrange this k s e))
+  (getset [this k v]
+    (.getset this k v))
+  (incr [this k]
+    (.incr this k))
+  (incrby [this k ^long a]
+    (.incrby this k a))
+  (incrbyfloat [this k ^double a]
+    (.incrbyfloat this k a))
+  (mget [this ks]
     (into (empty ks) (.mget this (into-array Object ks))))
-
+  (mset [this m]
+    (.mset this m))
+  (msetnx [this m]
+    (.msetnx this m))
+  (set 
+    ([this k v]
+     (.set this k v))
+    ([this k v ^SetArgs args]
+     (.set this k v args)))
+  (setbit [this k ^Long o ^Integer v]
+    (.setbit this k o v))
+  (setex [this k ^long sec v]
+    (.setex this k sec v))
+  (psetex [this k ^long ms v]
+    (.psetex this k ms v))
+  (setnx [this k v]
+    (.setnx this k v))
+  (setrange [this k ^long o v]
+    (.setrange this k o v))
+  (strlen [this k]
+    (.strlen this k))
+  
   ServerCommands
   (flushall [this]
     (.flushall this))

@@ -4,11 +4,15 @@
    [potemkin :refer [import-vars]]
    [clj-lettuce.args.scan]
    [clj-lettuce.args.migrate]
-   [clj-lettuce.args.sort]))
+   [clj-lettuce.args.sort]
+   [clj-lettuce.args.bitfield]
+   [clj-lettuce.args.set]))
 
-(import-vars [clj-lettuce.args.scan    scan-cursor scan-args scan-res scan-seq])
-(import-vars [clj-lettuce.args.migrate migrate-args])
-(import-vars [clj-lettuce.args.sort    sort-args])
+(import-vars [clj-lettuce.args.scan     scan-cursor scan-args scan-res scan-seq])
+(import-vars [clj-lettuce.args.migrate  migrate-args])
+(import-vars [clj-lettuce.args.sort     sort-args])
+(import-vars [clj-lettuce.args.bitfield bitfield-args])
+(import-vars [clj-lettuce.args.set      set-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -68,33 +72,35 @@
 
 (defprotocol StringsCommands
   "Redis Strings Commands"
-  (append [this k v])
-  (bitcount [this k])
-  (bitfield [this k args])
-  (bitop-and [this d ks])
-  (bitop-not [this d k])
-  (bitop-or [this d ks])
-  (bitop-xor [this d ks])
-  (bitpos [this k state] [this k state s e])
-  (decr [this k])
-  (decrby [this k a])
-  (get [this k])
-  (getbit [this k o])
-  (getrange [this k s e])
-  (getset [this k v])
-  (incr [this k])
-  (incrby [this k a])
-  (incrbyfloat [this k a])
-  (mget [this ks])
-  (mset [this m])
-  (msetnx [this m])
-  (set [this k v])
-  (setbit [this k o v])
-  (setex [this k sec v])
-  (psetex [this k ms v])
-  (setnx [this k v])
-  (setrange [k o v])
-  (strlen [this k]))
+  (append      [this k v]     "Append a value to a key")
+  (bitcount    [this k]       "Count set bits in a string")
+  (bitfield    [this k args]  "Execute BITFIELD with its subcommands")
+  (bitop-and   [this d ks]    "Perform bitwise AND between strings")
+  (bitop-not   [this d k]     "Perform bitwise NOT between strings")
+  (bitop-or    [this d ks]    "Perform bitwise OR between strings")
+  (bitop-xor   [this d ks]    "Perform bitwise XOR between strings")
+  (bitpos      [this k state] [this k state s e]
+                              "Find first bit set or clear in a string")
+  (decr        [this k]       "Decrement the integer value of a key by one")
+  (decrby      [this k a]     "Decrement the integer value of a key by the given number")
+  (get         [this k]       "Get the value of a key")
+  (getbit      [this k o]     "Get the bit value at offset in the key's string value")
+  (getrange    [this k s e]   "Get a substring of the string stored at a key")
+  (getset      [this k v]     "Set the string value of a key and return its old value")
+  (incr        [this k]       "Increment the integer value of a key by one")
+  (incrby      [this k a]     "Increment the integer value of a key by the given amount")
+  (incrbyfloat [this k a]     "Increment the float value of a key by the given amount")
+  (mget        [this ks]      "Get the values of all the given keys")
+  (mset        [this m]       "Set multiple keys to multiple values")
+  (msetnx      [this m]       "Like mset, but only if none of the keys exist")
+  (set         [this k v] [this k v args]
+                              "Set the string value of a key")
+  (setbit      [this k o v]   "Sets or clears the bit at offset in the key's string value")
+  (setex       [this k sec v] "Set the value and expiration of a key")
+  (psetex      [this k ms v]  "Set the value and expiration in milliseconds of a key")
+  (setnx       [this k v]     "Set the value of a key, only if the key does not exist")
+  (setrange    [this k o v]   "Overwrite part of a string at key starting at the offset")
+  (strlen      [this k]       "Get the length of the value stored in a key"))
 
 (defprotocol ServerCommands
   "Redis Server Commands"

@@ -12,9 +12,9 @@
   
   HashCommands
   (hdel [this k f]
-    (.hdel this k ^"[Ljava.lang.Object;" (into-array Object [f])))
+    (.hdel this k ^objects (into-array Object [f])))
   (hmdel [this k fs]
-    (.hdel this k ^"[Ljava.lang.Object;" (into-array Object fs)))
+    (.hdel this k ^objects (into-array Object fs)))
   (hexists [this k f]
     (.hexists this k f))
   (hget [this k f]
@@ -30,7 +30,7 @@
   (hlen [this k]
     (.hlen this k))
   (hmget [this k fs]
-    (into (empty fs) (.hmget this k ^"[Ljava.lang.Object;" (into-array Object fs))))
+    (into (empty fs) (.hmget this k ^objects (into-array Object fs))))
   (hmset [this k ^Map m]
     (.hmset this k m))
   (hscan 
@@ -55,7 +55,7 @@
   (dump [this k]
     (.dump this k))
   (exists [this k]
-    (.exists this ^"[Ljava.lang.Object;" (into-array Object [k])))
+    (.exists this ^objects (into-array Object [k])))
   (expire [this k ^long sec]
     (.expire this k sec))
   (expireat [this k ts-sec]
@@ -65,7 +65,7 @@
   (mdel [this ks]
     (.del this (into-array Object ks)))
   (mexists [this ks]
-    (.exists this ^"[Ljava.lang.Object;" (into-array Object ks)))
+    (.exists this ^objects (into-array Object ks)))
   (migrate [this ^String h ^Integer p ^Integer db ^Long ms ^MigrateArgs args]
     (.migrate this h p db ms args))
   (move [this k ^Integer db]
@@ -125,15 +125,15 @@
   (bitcount [this k]
     (.bitcount this k))
   (bitfield [this k ^BitFieldArgs args]
-    (.bitfield this k args))
+    (into [] (.bitfield this k args)))
   (bitop-and [this d ks]
-    (.bitopAnd this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+    (.bitopAnd this d ^objects (into-array Object [ks])))
   (bitop-not [this d k]
     (.bitopNot this d k))
   (bitop-or [this d ks]
-    (.bitopOr this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+    (.bitopOr this d ^objects (into-array Object [ks])))
   (bitop-xor [this d ks]
-    (.bitopXor this d ^"[Ljava.lang.Object;" (into-array Object [ks])))
+    (.bitopXor this d ^objects (into-array Object [ks])))
   (bitpos 
     ([this k ^Boolean state]
      (.bitpos this k state)) 

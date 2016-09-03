@@ -38,9 +38,9 @@
 
 (defn redis-cluster
   [^String redis-uri & 
-   {timeout :timeout unit :unit codec :coded auto-flush :auto-flush
-    :or {unit TimeUnit/MILLISECONDS 
-         codec (nippy-codec) 
+   {timeout :timeout unit :unit codec :codec auto-flush :auto-flush
+    :or {unit       TimeUnit/MILLISECONDS 
+         codec      (nippy-codec) 
          auto-flush true}}]
   (let [redis-cli (RedisClusterClient/create redis-uri)
         stateful-conn (.connect redis-cli codec)]

@@ -12,6 +12,13 @@
       (try (test-function)
            (finally (conn/shutdown rclust))))))
 
+(defmacro with-str-cmds [& body]
+  `(let [rclust# (conn/redis-cluster "redis://localhost:30001"
+                                     :codec (clj-lettuce.codec/utf8-string-codec))]
+     (binding [*cmds* (conn/commands-sync rclust#)]
+       (try ~@body
+            (finally (conn/shutdown rclust#))))))
+
 (defn flush-fixture [test-function]
   (redis/flushall *cmds*)
   (test-function))
@@ -95,32 +102,47 @@
       (redis/del *cmds* "h")
       (is (= 0 (redis/exists *cmds* "h")))
       (redis/restore *cmds* "h" 0 dump)
-      (is (= 1 (redis/exists *cmds* "h")))
-      (is (= {:foo "bar" :a 1 "b" :b} (redis/hgetall *cmds* "h"))))))
+      (is (= 1 (redis/exists  *cmds* "h")))
+      (is (=   (redis/hgetall *cmds* "h")
+               {:foo "bar" :a 1 "b" :b})))))
 
 (deftest string-commands-test
 
-  (testing "set and get string keys/values"
-    (redis/set *cmds* "foo"    "bar")
-    (redis/set *cmds* "foofoo" "barbar")
-    (is (= "bar"    (redis/get *cmds* "foo")))
-    (is (= "barbar" (redis/get *cmds* "foofoo"))))
-  
-  (testing "multiget and result type (with underlying (into (empty keys) ...)"
-    (is (=  ["bar" "barbar"] (redis/mget *cmds*  ["foo" "foofoo"])))
-    (is (= '("barbar" "bar") (redis/mget *cmds* '("foo" "foofoo"))))
-    (is (=  [nil nil]        (redis/mget *cmds*  ["dont" "exist"]))))
-  
   (testing "set and get various keys/values"
     (redis/set *cmds* "foo-int" 1337)
     (redis/set *cmds* 666       "devil")
     (redis/set *cmds* :foo-kw   :bar-kw)
     (redis/set *cmds* #{1 2 3}  '(1 2 3))
-    (redis/set *cmds* {:a "a"}  [:b "b"])
-    (is (= 1337     (redis/get *cmds* "foo-int")))
-    (is (= "devil"  (redis/get *cmds* 666)))
-    (is (= :bar-kw  (redis/get *cmds* :foo-kw)))
-    (is (= '(1 2 3) (redis/get *cmds* #{1 2 3})))
-    (is (= [:b "b"] (redis/get *cmds* {:a "a"}))))
-  
-  )
+    (redis/set *cmds* {:a "a"}  [:b "b"] (redis/set-args :ex 1))
+    (is (= 1337     (redis/get  *cmds* "foo-int")))
+    (is (= :bar-kw  (redis/get  *cmds* :foo-kw)))
+    (is (= '(1 2 3) (redis/get  *cmds* #{1 2 3})))
+    (is (= [:b "b"] (redis/get  *cmds* {:a "a"})))
+    (is (> 1001     (redis/pttl *cmds* {:a "a"}) 0))
+    (is (= "devil"    (redis/getset *cmds* 666 0xdeadbeef)))
+    (is (= 0xdeadbeef (redis/get    *cmds* 666))))
+
+  (testing "multiget/set and result type (with underlying (into (empty keys) ...)"
+    (redis/mset *cmds* {"foo" "bar" "foofoo" "barbar"})
+    (is (=  ["bar" "barbar"] (redis/mget *cmds*  ["foo" "foofoo"])))
+    (is (= '("barbar" "bar") (redis/mget *cmds* '("foo" "foofoo"))))
+    (is (=  [nil nil]        (redis/mget *cmds*  ["dont" "exist"]))))
+
+  (testing "raw string related commands"
+    (with-str-cmds
+      (is (= 5  (redis/append *cmds* "msg" "Hello")))
+      (is (= 11 (redis/append *cmds* "msg" " World")))
+      (is (= "Hello World" (redis/get *cmds* "msg")))
+      (redis/setrange *cmds* "msg" 6 "Redis")
+      (is (= "Hello Redis" (redis/get *cmds* "msg")))
+      (redis/append *cmds* "ts" "0043")
+      (redis/append *cmds* "ts" "0035")
+      (is (= "0043" (redis/getrange *cmds* "ts" 0 3)))
+      (is (= "0035" (redis/getrange *cmds* "ts" 4 7)))))
+
+  (testing "bitfield command"
+    (let [args (redis/bitfield-args :incrby :u2 100 1 :overflow :sat :incrby :u2 102 1)]
+      (is (= [1 1] (redis/bitfield *cmds* "bf" args)))
+      (is (= [2 2] (redis/bitfield *cmds* "bf" args)))
+      (is (= [3 3] (redis/bitfield *cmds* "bf" args)))
+      (is (= [0 3] (redis/bitfield *cmds* "bf" args))))))

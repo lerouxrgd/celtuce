@@ -12,12 +12,12 @@
    (com.esotericsoftware.kryo.io Output Input)
    (com.esotericsoftware.kryo.pool KryoFactory KryoPool KryoPool$Builder)))
 
-(defn bb->bytes [^ByteBuffer bb]
+(defn ^"[B" bb->bytes [^ByteBuffer bb]
   (let [bytes (byte-array (.remaining bb))]
     (.get bb bytes)
     bytes))
 
-(defn bytes->bb [^bytes b]
+(defn ^ByteBuffer bytes->bb [^bytes b]
   (ByteBuffer/wrap b))
 
 ;; Lettuce codecs

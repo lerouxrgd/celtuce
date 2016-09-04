@@ -9,7 +9,7 @@
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
-  
+
   HashCommands
   (hdel [this k f]
     (.hdel this k ^objects (into-array Object [f])))
@@ -130,13 +130,13 @@
   (bitfield [this k ^BitFieldArgs args]
     (into [] (.bitfield this k args)))
   (bitop-and [this d ks]
-    (.bitopAnd this d ^objects (into-array Object [ks])))
+    (.bitopAnd this d ^objects (into-array Object ks)))
   (bitop-not [this d k]
     (.bitopNot this d k))
   (bitop-or [this d ks]
-    (.bitopOr this d ^objects (into-array Object [ks])))
+    (.bitopOr this d ^objects (into-array Object ks)))
   (bitop-xor [this d ks]
-    (.bitopXor this d ^objects (into-array Object [ks])))
+    (.bitopXor this d ^objects (into-array Object ks)))
   (bitpos 
     ([this k ^Boolean state]
      (.bitpos this k state)) 
@@ -183,7 +183,49 @@
     (.setrange this k o v))
   (strlen [this k]
     (.strlen this k))
-  
+
+  ListCommands
+  (blpop [this ^long sec ks]
+    (let [res (.blpop this sec ^objects (into-array Object ks))]
+      [(.key res) (.value res)]))
+  (brpop [this ^long sec ks]
+    (let [res (.brpop this sec ^objects (into-array Object ks))]
+      [(.key res) (.value res)]))
+  (brpoplpush [this ^long sec s d]
+    (.brpoplpush this sec s d))
+  (lindex [this k ^long idx]
+    (.lindex this k idx))
+  (linsert [this k ^Boolean b? p v]
+    (.linsert this k b? p v))
+  (llen [this k]
+    (.llen this k))
+  (lpop [this k]
+    (.lpop this k))
+  (lpush [this k v]
+    (.lpush this k ^objects (into-array Object [v])))
+  (lpushx [this k v]
+    (.lpushx this k v))
+  (lrange [this k ^long s ^long e]
+    (into [] (.lrange this k s e)))
+  (lrem [this k ^long c v]
+    (.lrem this k c v))
+  (lset [this k ^long idx v]
+    (.lset this k idx v))
+  (ltrim [this k ^long s ^long e]
+    (.ltrim this k s e))
+  (mrpush [this k vs]
+    (.rpush this k ^objects (into-array Object vs)))
+  (mlpush [this k vs]
+    (.lpush this k ^objects (into-array Object vs)))
+  (rpop [this k]
+    (.rpop this k))
+  (rpoplpush [this s d]
+    (.rpoplpush this s d))
+  (rpush [this k v]
+    (.rpush this k ^objects (into-array Object [v])))
+  (rpushx [this k v]
+    (.rpushx this k v))
+
   ServerCommands
   (flushall [this]
     (.flushall this))

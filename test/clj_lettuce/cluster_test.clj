@@ -169,3 +169,25 @@
       (is (= [2 2] (redis/bitfield *cmds* "bf" args)))
       (is (= [3 3] (redis/bitfield *cmds* "bf" args)))
       (is (= [0 3] (redis/bitfield *cmds* "bf" args))))))
+
+(deftest list-commands-test
+
+  (testing "basic list manipulations"
+    (is (= 0 (redis/rpushx *cmds* "x" :no-op)))
+    (is (= 5 (redis/mrpush *cmds* "l" (->> (range 65 70) (map char)))))
+    (is (= 5 (redis/llen   *cmds* "l")))
+    (is (= [\A \B \C \D \E] (redis/lrange *cmds* "l" 0 5)))
+    (is (= 6  (redis/lpush   *cmds* "l" \A)))
+    (is (= 2  (redis/lrem    *cmds* "l" 2 \A)))
+    (is (= \B (redis/lindex  *cmds* "l" 0)))
+    (is (= 5  (redis/linsert *cmds* "l" true \B \A)))
+    (redis/lset  *cmds* "l" 2 \Z)
+    (redis/ltrim *cmds* "l" 0 2)
+    (is (= [\A \B \Z] (redis/lrange *cmds* "l" 0 5)))
+    (is (= \Z (redis/rpop *cmds* "l")))
+    (is (= 2  (redis/llen *cmds* "l"))))
+
+  (testing "list blocking commands"
+    (redis/mrpush *cmds* "bl" [1 2 3])
+    (is (= ["bl" 1] (redis/blpop *cmds* 1 ["bl"])))
+    (is (= ["bl" 3] (redis/brpop *cmds* 1 ["bl"])))))

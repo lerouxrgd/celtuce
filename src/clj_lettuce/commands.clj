@@ -103,6 +103,28 @@
   (setrange    [this k o v]   "Overwrite part of a string at key starting at the offset")
   (strlen      [this k]       "Get the length of the value stored in a key"))
 
+(defprotocol ListCommands
+  "Redis List Commands"
+  (blpop      [this sec ks]   "Remove and get the first elem (block until there's one)")
+  (brpop      [this sec ks]   "Remove and get the last elem (block until there's one)")
+  (brpoplpush [this sec s d]  "Pop and push to another list, return the elem (blocking)")
+  (lindex     [this k idx]    "Get an element from a list by its index")
+  (linsert    [this k b? p v] "Insert an elem before or after another elem in a list")
+  (llen       [this k]        "Get the length of a list")
+  (lpop       [this k]        "Remove and get the first element in a list")
+  (lpush      [this k v]      "Prepend one value to a list")
+  (lpushx     [this k v]      "Prepend a value to a list, only if the list exists")
+  (lrange     [this k s e]    "Get a range of elements from a list")
+  (lrem       [this k c v]    "Remove elements from a list")
+  (lset       [this k idx v]  "Set the value of an element in a list by its index")
+  (ltrim      [this k s e]    "Trim a list to the specified range")
+  (mlpush     [this k vs]     "Prepend multiple values to a list")
+  (mrpush     [this k vs]     "Append multiple values to a list")
+  (rpop       [this k]        "Remove and get the last element in a list")
+  (rpoplpush  [this s d]      "Pop and push to another list, return the elem")
+  (rpush      [this k v]      "Append one value to a list")
+  (rpushx     [this k v]      "Append a value to a list, only if the list exists"))
+
 (defprotocol ServerCommands
   "Redis Server Commands"
   (flushall [this] "Remove all keys from all databases"))

@@ -128,7 +128,7 @@
     (is (= '("barbar" "bar") (redis/mget *cmds* '("foo" "foofoo"))))
     (is (=  [nil nil]        (redis/mget *cmds*  ["dont" "exist"]))))
 
-  (testing "raw string related commands"
+  (testing "raw string manipulations"
     (with-str-cmds
       (is (= 5  (redis/append *cmds* "msg" "Hello")))
       (is (= 11 (redis/append *cmds* "msg" " World")))
@@ -138,7 +138,30 @@
       (redis/append *cmds* "ts" "0043")
       (redis/append *cmds* "ts" "0035")
       (is (= "0043" (redis/getrange *cmds* "ts" 0 3)))
-      (is (= "0035" (redis/getrange *cmds* "ts" 4 7)))))
+      (is (= "0035" (redis/getrange *cmds* "ts" 4 7)))
+      (redis/set *cmds* "k" "foobar")
+      (is (= 6  (redis/strlen   *cmds* "k")))
+      (is (= 26 (redis/bitcount *cmds* "k")))
+      (is (= 4  (redis/bitcount *cmds* "k" 0 0)))
+      (is (= 6  (redis/bitcount *cmds* "k" 1 1)))
+      (redis/set *cmds* "i" "10")
+      (is (= 11    (redis/incr        *cmds* "i")))      
+      (is (= 15    (redis/incrby      *cmds* "i" 4)))      
+      (is (= 11    (redis/decrby      *cmds* "i" 4)))
+      (is (= 10    (redis/decr        *cmds* "i")))
+      (is (= 11.11 (redis/incrbyfloat *cmds* "i" 1.11)))
+      (is (= 0 (redis/setbit *cmds* "b" 0 0)))
+      (is (= 0 (redis/setbit *cmds* "b" 1 1)))
+      (is (= 1 (redis/setbit *cmds* "b" 1 1)))
+      (is (= 1 (redis/getbit *cmds* "b" 1)))
+      (is (= 1 (redis/bitpos *cmds* "b" true)))
+      (redis/setbit *cmds* "b" 0 1)
+      (redis/setbit *cmds* "b" 1 1)
+      (redis/setbit *cmds* "b" 2 0)
+      (redis/setbit *cmds* "b" 3 0)
+      (redis/setbit *cmds* "b" 4 0)
+      (redis/setbit *cmds* "b" 5 1)
+      (is (= 2 (redis/bitpos *cmds* "b" false 0 0)))))
 
   (testing "bitfield command"
     (let [args (redis/bitfield-args :incrby :u2 100 1 :overflow :sat :incrby :u2 102 1)]

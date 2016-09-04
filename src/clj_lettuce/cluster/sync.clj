@@ -122,8 +122,11 @@
   StringsCommands
   (append [this k v]
     (.append this k v))
-  (bitcount [this k]
-    (.bitcount this k))
+  (bitcount 
+    ([this k]
+     (.bitcount this k))
+    ([this k ^long s ^long e]
+     (.bitcount this k s e)))
   (bitfield [this k ^BitFieldArgs args]
     (into [] (.bitfield this k args)))
   (bitop-and [this d ks]

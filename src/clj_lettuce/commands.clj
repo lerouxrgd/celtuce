@@ -73,7 +73,8 @@
 (defprotocol StringsCommands
   "Redis Strings Commands"
   (append      [this k v]     "Append a value to a key")
-  (bitcount    [this k]       "Count the bits set to 1 in a string")
+  (bitcount    [this k] [this k s e]
+                              "Count the bits set to 1 in a string")
   (bitfield    [this k args]  "Execute BITFIELD with its subcommands")
   (bitop-and   [this d ks]    "Perform bitwise AND between strings")
   (bitop-not   [this d k]     "Perform bitwise NOT between strings")

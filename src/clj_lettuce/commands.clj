@@ -125,6 +125,29 @@
   (rpush      [this k v]      "Append one value to a list")
   (rpushx     [this k v]      "Append a value to a list, only if the list exists"))
 
+(defprotocol SetCommands
+  "Redis Set Commands"
+  (msadd       [this k ms]  "Add multiple members to a set")
+  (msrem       [this k ms]  "Remove multiple members from a set")
+  (sadd        [this k m]   "Add one member to a set")
+  (scard       [this k]     "Get the number of members in a set")
+  (sdiff       [this ks]    "Subtract multiple sets")
+  (sdiffstore  [this d ks]  "Subtract multiple sets and store the resulting set in a key")
+  (sinter      [this ks]    "Intersect multiple sets")
+  (sinterstore [this d ks]  "Intersect multiple sets and store the resulting set in a key")
+  (sismember   [this k v]   "Determine if a given value is a member of a set")
+  (smove       [this k d m] "Move a member from one set to another")
+  (smembers    [this k]     "Get all the members in a set")
+  (spop        [this k] [this k c]
+                            "Remove and return one or multiple random members from a set")
+  (srandmember [this k] [this k c]
+                            "Get one or multiple random members from a set")
+  (srem        [this k m]   "Remove one member from a set")
+  (sunion      [this ks]    "Add multiple sets")
+  (sunionstore [this d ks]  "Add multiple sets and store the resulting set in a key")
+  (sscan       [this k] [this k c] [this k c args]
+                            "Incrementally iterate Set elements"))
+
 (defprotocol ServerCommands
   "Redis Server Commands"
   (flushall [this] "Remove all keys from all databases"))

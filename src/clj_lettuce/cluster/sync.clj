@@ -226,6 +226,53 @@
   (rpushx [this k v]
     (.rpushx this k v))
 
+  SetCommands
+  (msadd [this k ms]
+    (.sadd this k ^objects (into-array Object ms)))
+  (msrem [this k ms]
+    (.srem this k ^objects (into-array Object ms)))
+  (sadd [this k m]
+    (.sadd this k ^objects (into-array Object [m])))
+  (scard [this k]
+    (.scard this k))
+  (sdiff [this ks]
+    (into #{} (.sdiff this ^objects (into-array Object ks))))
+  (sdiffstore [this d ks]
+    (.sdiffstore this d ^objects (into-array Object ks)))
+  (sinter [this ks]
+    (into #{} (.sinter this ^objects (into-array Object ks))))
+  (sinterstore [this d ks]
+    (.sinterstore this d ^objects (into-array Object ks)))
+  (sismember [this k v]
+    (.sismember this k v))
+  (smove [this k d m]
+    (.smove this k d m))
+  (smembers [this k]
+    (into #{} (.smembers this k)))
+  (spop 
+    ([this k]
+     (.spop this k)) 
+    ([this k ^long c]
+     (into #{} (.spop this k c))))
+  (srandmember 
+    ([this k]
+     (.srandmember this k)) 
+    ([this k ^long c]
+     (into #{} (.srandmember this k c))))
+  (srem [this k m]
+    (.srem this k ^objects (into-array Object [m])))
+  (sunion [this ks]
+    (into #{} (.sunion this ^objects(into-array Object ks))))
+  (sunionstore [this d ks]
+    (.sunionstore this d ^objects(into-array Object ks)))
+  (sscan 
+    ([this k]
+     (.sscan this k))
+    ([this k ^ScanCursor c]
+     (.sscan this k c))
+    ([this k ^ScanCursor c args]
+     (.sscan this k c)))
+
   ServerCommands
   (flushall [this]
     (.flushall this))

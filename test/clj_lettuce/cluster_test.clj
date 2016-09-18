@@ -191,3 +191,30 @@
     (redis/mrpush *cmds* "bl" [1 2 3])
     (is (= ["bl" 1] (redis/blpop *cmds* 1 ["bl"])))
     (is (= ["bl" 3] (redis/brpop *cmds* 1 ["bl"])))))
+
+(deftest set-commands-test
+
+  (testing "add and scan set members"
+    (is (= 1 (redis/sadd  *cmds* "s1" :a)))
+    (is (= 4 (redis/msadd *cmds* "s1" [:b :c :d :e])))
+    (is (= 5 (redis/scard *cmds* "s1")))
+    (is (= true (redis/sismember *cmds* "s1" :a)))
+    (is (= #{:a :b :c :d :e}
+           (redis/smembers *cmds* "s1")))
+    (is (= #{:a :b :c :d :e}
+           (->> (redis/sscan *cmds* "s1" (redis/scan-cursor))
+                (redis/scan-seq) 
+                (take 5)
+                (apply into #{})))))
+
+  (testing "deleting set members"
+    (let [m    (redis/spop     *cmds* "s1")
+          ms   (redis/smembers *cmds* "s1")]
+      (is (= 4 (redis/scard    *cmds* "s1")))
+      (is (= 4 (count ms)))
+      (is (= #{:a :b :c :d :e}
+             (conj ms m))))
+    (let [m        (redis/srandmember *cmds* "s1")]
+      (is (= 1     (redis/srem        *cmds* "s1" m)))
+      (is (= 3     (redis/scard       *cmds* "s1")))
+      (is (= false (redis/sismember   *cmds* "s1" m))))))

@@ -25,7 +25,9 @@
   MapScanCursor
   (scan-res [this] (into {} (.getMap this)))
   KeyScanCursor
-  (scan-res [this] (into [] (.getKeys this))))
+  (scan-res [this] (into [] (.getKeys this)))
+  ValueScanCursor
+  (scan-res [this] (into [] (.getValues this))))
 
 (defn ^ScanCursor scan-cursor 
   ([]

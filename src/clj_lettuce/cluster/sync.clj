@@ -5,7 +5,8 @@
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
-    ScanArgs ScanCursor MigrateArgs SortArgs BitFieldArgs SetArgs)
+    ScanArgs ScanCursor MigrateArgs SortArgs BitFieldArgs SetArgs 
+    ZStoreArgs ZAddArgs)
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
@@ -262,9 +263,9 @@
   (srem [this k m]
     (.srem this k ^objects (into-array Object [m])))
   (sunion [this ks]
-    (into #{} (.sunion this ^objects(into-array Object ks))))
+    (into #{} (.sunion this ^objects (into-array Object ks))))
   (sunionstore [this d ks]
-    (.sunionstore this d ^objects(into-array Object ks)))
+    (.sunionstore this d ^objects (into-array Object ks)))
   (sscan 
     ([this k]
      (.sscan this k))
@@ -272,6 +273,89 @@
      (.sscan this k c))
     ([this k ^ScanCursor c args]
      (.sscan this k c)))
+
+  SortedSetCommands
+  (mzadd
+    ([this k sms]
+     (.zadd this k ^objects (into-array Object sms)))
+    ([this k ^ZAddArgs args sms]
+     (.zadd this k args ^objects (into-array Object sms))))
+  (mzrem [this k ms]
+    )
+  (zadd
+    ([this k ^double s m]
+     (.zadd this k s m))
+    ([this k ^ZAddArgs args ^Double s m]
+     (.zadd this k args s m)))
+  (zaddincr [this k s m]
+    )
+  (zcard [this k]
+    )
+  (zcount [this k min max]
+    )
+  (zincrby [this a m]
+    )
+  (zinterstore
+    ([this d ks]
+     )
+    ([this d args ks]
+     ))
+  (zrange [this k s e]
+    )
+  (zrange-withscores [this k s e]
+    )
+  (zrangebyscore
+    ([this k min max]
+     )
+    ([this k min max o c]
+     ))
+  (zrangebyscore-withscores
+    ([this k min max]
+     )
+    ([this k min max o c]
+     ))
+  (zrank [this k m]
+    )
+  (zrem [this k m]
+    )
+  (zremrangebyrank [this k s e]
+    )
+  (zremrangebyscore [this k min max]
+    )
+  (zrevrange [this k s e]
+    )
+  (zrevrange-withscores [this k s e]
+    )
+  (zrevrangebyscore
+    ([this k min max]
+     )
+    ([this k min max o c]
+     ))
+  (zrevrangebyscore-withscores
+    ([this k min max]
+     )
+    ([this k min max o c]
+     ))
+  (zrevrank [this k m]
+    )
+  (zscore [this k m]
+    )
+  (zunionstore
+    ([this d ks]
+     )
+    ([this d args ks]
+     ))
+  (zscan
+    ([this k]
+     )
+    ([this k c]
+     )
+    ([this k c args]
+     ))
+  (zlexcount [this k min max]
+    )
+  (zremrangebylex [this k min max]
+    )
 
   ServerCommands
   (flushall [this]

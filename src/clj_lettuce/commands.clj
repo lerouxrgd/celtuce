@@ -148,6 +148,35 @@
   (sscan       [this k] [this k c] [this k c args]
                             "Incrementally iterate Set elements"))
 
+(defprotocol SortedSetCommands
+  "Redis Sorted Set Commands"
+  (mzadd [this k sms] [this k args sms])
+  (mzrem [this k ms])
+  (zadd [this k s m] [this k args s m])
+  (zaddincr [this k s m])
+  (zcard [this k])
+  (zcount [this k min max])
+  (zincrby [this a m])
+  (zinterstore [this d ks] [this d args ks])
+  (zrange [this k s e])
+  (zrange-withscores [this k s e])
+  (zrangebyscore [this k min max] [this k min max o c])
+  (zrangebyscore-withscores [this k min max] [this k min max o c])
+  (zrank [this k m])
+  (zrem [this k m])
+  (zremrangebyrank [this k s e])
+  (zremrangebyscore [this k min max])
+  (zrevrange [this k s e])
+  (zrevrange-withscores [this k s e])
+  (zrevrangebyscore [this k min max] [this k min max o c])
+  (zrevrangebyscore-withscores [this k min max] [this k min max o c])
+  (zrevrank [this k m])
+  (zscore [this k m])
+  (zunionstore [this d ks] [this d args ks])
+  (zscan [this k] [this k c] [this k c args])
+  (zlexcount [this k min max])
+  (zremrangebylex [this k min max]))
+
 (defprotocol ServerCommands
   "Redis Server Commands"
   (flushall [this] "Remove all keys from all databases"))

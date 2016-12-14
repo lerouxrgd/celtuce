@@ -7,5 +7,5 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [biz.paluch.redis/lettuce "4.2.2.Final"]
                  [potemkin "0.4.3"]
-                 [com.taoensso/nippy "2.12.1"]
+                 [com.taoensso/nippy "2.12.2"]
                  [com.twitter/carbonite "1.5.0"]])

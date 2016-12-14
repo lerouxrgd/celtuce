@@ -63,7 +63,7 @@
           res (redis/scan-res cur)]
       (is (= false (clj-lettuce.args.scan/finished? cur)))
       (is (= true (map? res)))
-      (is (<= 8 (count res) 12))) ;; about 10
+      (is (<= 5 (count res) 15))) ;; about 10
     (let [els (->> (redis/scan-args :limit 50)
                    (redis/hscan *cmds* "hl" (redis/scan-cursor))
                    (redis/scan-seq) 
@@ -76,7 +76,9 @@
           res (redis/scan-res cur)]
       (is (= true (clj-lettuce.args.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
-             res)))))
+             res)))
+    (is (thrown? Exception
+                 (redis/scan-seq (redis/hscan *cmds* nil (redis/scan-cursor)))))))
 
 (deftest key-commands-test
   

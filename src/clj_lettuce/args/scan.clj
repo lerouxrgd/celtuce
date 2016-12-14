@@ -43,20 +43,26 @@
                       (scan-seq* scan-fn cursor-res args))))))
 
 (defmacro scan-seq 
-  "Takes a scan command form (scan, sscan, hscan, zscan) 
-  with optionals ScanCursor c and ScanArgs args, 
-  and returns a lazy seq that calls scan-res on each iteration result."
+  "Takes a scan FORM composed of:
+   - a command: \"scan\", \"sscan\", \"hscan\", \"zscan\"
+   - a key when the command is not \"scan\"
+   - optionals: ScanCursor c, ScanArgs args
+  Returns a lazy seq that calls scan-res on each iteration result."
   [scan-form]
   (let [[scan-cmd this a1 a2 a3] scan-form]
     `(cond 
-       ;; scan-cmd is SCAN
+
+       ;; scan-cmd is: SCAN
+       ;; a1 is ScanCursor, a2 is ScanArgs
        (or (every? nil? [~a1 ~a1 ~a2]) (instance? ScanCursor ~a1))
        (scan-seq* (partial ~scan-cmd ~this) (or ~a1 (scan-cursor)) ~a2)
-       ;; scan-cmd is SSCAN, HSCAN, or ZSCAN
+
+       ;; scan-cmd is: SSCAN, HSCAN, or ZSCAN
+       ;; a1 is a key, a2 is ScanCursor, a3 is ScanArgs
        (not= nil ~a1)
        (scan-seq* (partial ~scan-cmd ~this ~a1) (or ~a2 (scan-cursor)) ~a3)
+
        ;; invalid arguments for the given scan-cmd
-       :else (ex-info (->> ["invalid arguments" '~a1 '~a2 '~a3 "for" '~scan-cmd] 
-                           (interpose " ")
-                           (apply str))))))
+       :else (throw (ex-info "malformed scan command" {:scan-cmd (name '~scan-cmd)
+                                                       :args ['~a1 '~a2 '~a3]})))))
 

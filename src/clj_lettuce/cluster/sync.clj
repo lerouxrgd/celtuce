@@ -6,7 +6,7 @@
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
     ScanArgs ScanCursor MigrateArgs SortArgs BitFieldArgs SetArgs 
-    ZStoreArgs ZAddArgs)
+    ZStoreArgs ZAddArgs ScoredValue)
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
@@ -281,81 +281,98 @@
     ([this k ^ZAddArgs args sms]
      (.zadd this k args ^objects (into-array Object sms))))
   (mzrem [this k ms]
-    )
+    (.zrem this k ^objects (into-array Object ms)))
   (zadd
     ([this k ^double s m]
      (.zadd this k s m))
     ([this k ^ZAddArgs args ^Double s m]
      (.zadd this k args s m)))
-  (zaddincr [this k s m]
-    )
+  (zaddincr [this k ^double s m]
+    (.zaddincr this k s m))
   (zcard [this k]
-    )
-  (zcount [this k min max]
-    )
-  (zincrby [this a m]
-    )
+    (.zcard this k))
+  (zcount [this k ^double min ^double max]
+    (.zcount this k min max))
+  (zincrby [this k ^double a m]
+    (.zincrby this k a m))
   (zinterstore
-    ([this d ks]
-     )
-    ([this d args ks]
-     ))
-  (zrange [this k s e]
-    )
-  (zrange-withscores [this k s e]
-    )
+    ([this d ^objects ks]
+     (.zinterstore this d ks))
+    ([this d ^ZStoreArgs args ^objects ks]
+     (.zinterstore this d args ks)))
+  (zrange [this k ^long s ^long e]
+    (into [] (.zrange this k s e)))
+  (zrange-withscores [this k ^long s ^long e]
+    (->> (.zrangeWithScores this k s e) 
+         (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+         (into [])))
   (zrangebyscore
-    ([this k min max]
-     )
-    ([this k min max o c]
-     ))
+    ([this k ^double min ^double max]
+     (into [] (.zrangebyscore this k min max)))
+    ([this k ^Double min ^Double max ^Long o ^Long c]
+     (into [] (.zrangebyscore this k min max o c))))
   (zrangebyscore-withscores
-    ([this k min max]
-     )
-    ([this k min max o c]
-     ))
+    ([this k ^double min ^double max]
+     (->> (.zrangebyscoreWithScores this k min max)
+          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+          (into [])))
+    ([this k ^Double min ^Double max ^Long o ^Long c]
+     (->> (.zrangebyscoreWithScores this k min max o c) 
+          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+          (into []))))
   (zrank [this k m]
-    )
+    (.zrank this k m))
   (zrem [this k m]
-    )
-  (zremrangebyrank [this k s e]
-    )
-  (zremrangebyscore [this k min max]
-    )
-  (zrevrange [this k s e]
-    )
-  (zrevrange-withscores [this k s e]
-    )
+    (.zrem this k ^objects (into-array Object [m])))
+  (zremrangebyrank [this k ^long s ^long e]
+    (.zremrangebyrank this k s e))
+  (zremrangebyscore [this k ^Double min ^Double max]
+    (.zremrangebyscore this k min max))
+  (zrevrange [this k ^long s ^long e]
+    (into [] (.zrevrange this k s e)))
+  (zrevrange-withscores [this k ^long s ^long e]
+    (->> (.zrevrangeWithScores this k s e)
+         (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+         (into [])))
   (zrevrangebyscore
-    ([this k min max]
-     )
-    ([this k min max o c]
-     ))
+    ([this k ^double min ^double max]
+     (into [] (.zrevrangebyscore this k min max)))
+    ([this k ^Double min ^Double max ^Long o ^Long c]
+     (into [] (.zrevrangebyscore this k min max o c))))
   (zrevrangebyscore-withscores
-    ([this k min max]
-     )
-    ([this k min max o c]
-     ))
+    ([this k ^double min ^double max]
+     (->> (.zrevrangebyscoreWithScores this k min max)
+          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+          (into [])))
+    ([this k ^Double min ^Double max ^Long o ^Long c]
+     (->> (.zrevrangebyscoreWithScores this k min max o c)
+          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+          (into []))))
   (zrevrank [this k m]
-    )
+    (.zrevrank this k m))
   (zscore [this k m]
-    )
+    (.zscore this k m))
   (zunionstore
     ([this d ks]
-     )
-    ([this d args ks]
-     ))
+     (.zunionstore this d ^objects (into-array Object ks)))
+    ([this d ^ZStoreArgs args ks]
+     (.zunionstore this d args ^objects (into-array Object ks))))
   (zscan
     ([this k]
-     )
-    ([this k c]
-     )
-    ([this k c args]
-     ))
-  (zlexcount [this k min max]
-    )
-  (zremrangebylex [this k min max]
-    )
+     (.zscan this k))
+    ([this k ^ScanCursor c]
+     (.zscan this k c))
+    ([this k ^ScanCursor c ^ScanArgs args]
+     (.zscan this c args)))
+  (zlexcount [this k ^String min ^String max]
+    (.zlexcount this k min max))
+  (zremrangebylex [this k ^String min ^String max]
+    (.zremrangebylex this k min max))
+  (zrangebylex 
+    ([this k ^String min ^String max]
+     (.zrangebylex this k min max))
+    ([this k ^String min ^String max ^Long o ^Long c]
+     (.zrangebylex this k min max o c)))
 
   ServerCommands
   (flushall [this]

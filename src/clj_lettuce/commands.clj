@@ -156,7 +156,7 @@
   (zaddincr [this k s m])
   (zcard [this k])
   (zcount [this k min max])
-  (zincrby [this a m])
+  (zincrby [this k a m])
   (zinterstore [this d ks] [this d args ks])
   (zrange [this k s e])
   (zrange-withscores [this k s e])
@@ -175,7 +175,8 @@
   (zunionstore [this d ks] [this d args ks])
   (zscan [this k] [this k c] [this k c args])
   (zlexcount [this k min max])
-  (zremrangebylex [this k min max]))
+  (zremrangebylex [this k min max])
+  (zrangebylex [this k min max] [this k min max o c]))
 
 (defprotocol ServerCommands
   "Redis Server Commands"

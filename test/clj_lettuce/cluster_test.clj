@@ -6,18 +6,18 @@
 
 (def ^:dynamic *cmds*)
 
-(defn cmds-fixture [test-function]
-  (let [rclust (conn/redis-cluster "redis://localhost:30001")]
-    (binding [*cmds* (conn/commands-sync rclust)]
-      (try (test-function)
-           (finally (conn/shutdown rclust))))))
-
 (defmacro with-str-cmds [& body]
   `(let [rclust# (conn/redis-cluster "redis://localhost:30001"
                                      :codec (clj-lettuce.codec/utf8-string-codec))]
      (binding [*cmds* (conn/commands-sync rclust#)]
        (try ~@body
             (finally (conn/shutdown rclust#))))))
+
+(defn cmds-fixture [test-function]
+  (let [rclust (conn/redis-cluster "redis://localhost:30001")]
+    (binding [*cmds* (conn/commands-sync rclust)]
+      (try (test-function)
+           (finally (conn/shutdown rclust))))))
 
 (defn flush-fixture [test-function]
   (redis/flushall *cmds*)
@@ -220,3 +220,7 @@
       (is (= 1     (redis/srem        *cmds* "s1" m)))
       (is (= 3     (redis/scard       *cmds* "s1")))
       (is (= false (redis/sismember   *cmds* "s1" m))))))
+
+(deftest sortedset-commands-test
+  )
+

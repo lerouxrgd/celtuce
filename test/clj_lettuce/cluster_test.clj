@@ -275,3 +275,15 @@
              (redis/zrangebylex *cmds* "z2" "-" "[c")))
       (is (= 5 (redis/zlexcount *cmds* "z2" "-" "+"))))))
 
+(deftest scripting-commands-test
+  (let [script "return 10"
+        sha    "080c414e64bca1184bc4f6220a19c4d495ac896d"]
+    (with-str-cmds
+      (testing "simple scripting"
+        (is (= 10  (redis/eval    *cmds* script :integer [])))
+        (is (= sha (redis/digest  *cmds* script)))
+        (is (= 10  (redis/evalsha *cmds* sha :integer [])))
+        (redis/script-flush *cmds*)
+        (is (thrown? com.lambdaworks.redis.RedisCommandExecutionException
+                     (redis/evalsha *cmds* sha :integer [])))))))
+

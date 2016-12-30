@@ -1,5 +1,5 @@
 (ns clj-lettuce.commands
-  (:refer-clojure :exclude [get set keys sort type])
+  (:refer-clojure :exclude [get set keys sort type eval])
   (:require 
    [potemkin :refer [import-vars]]
    [clj-lettuce.args.scan]
@@ -302,6 +302,23 @@
   (zrangebyscore-withscores    [this k min max] [this k min max o c])
   (zrevrange-withscores        [this k s e])
   (zrevrangebyscore-withscores [this k min max] [this k min max o c]))
+
+(defprotocol ScriptingCommands
+  "Redis Scripting Commands (Lua 5.1)"
+  (eval           [this script type ks] [this script type ks vs]
+                  "Execute a Lua script server side")
+  (evalsha        [this digest type ks] [this digest type ks vs]
+                  "Evaluates a script cached on the server side by its SHA1 digest")
+  (script-exists? [this digests]
+                  "Check existence of scripts in the script cache")
+  (script-flush   [this]
+                  "Remove all the scripts from the script cache")
+  (script-kill    [this]
+                  "Kill the script currently in execution")
+  (scirpt-load    [this script]
+                  "Load the specified Lua script into the script cache")
+  (digest         [this script]
+                  "Create a SHA1 digest from a Lua script"))
 
 (defprotocol ServerCommands
   "Redis Server Commands"

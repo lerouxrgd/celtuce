@@ -1,12 +1,14 @@
 (ns clj-lettuce.cluster.sync
-  (:refer-clojure :exclude [get set keys sort type])
+  (:refer-clojure :exclude [get set keys sort type eval])
   (:require 
    [clj-lettuce.commands :refer :all]
-   [clj-lettuce.args.zset :refer [zadd-args]])
+   [clj-lettuce.args.zset :refer [zadd-args]]
+   [clj-lettuce.args.scripting :refer [output-type]])
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
-    ScanArgs ScanCursor MigrateArgs SortArgs BitFieldArgs SetArgs 
+    ScanCursor ScriptOutputType
+    ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs 
     ZStoreArgs ZAddArgs ScoredValue)
    (java.util Map)))
 
@@ -374,6 +376,32 @@
      (into [] (.zrangebylex this k min max)))
     ([this k ^String min ^String max ^Long o ^Long c]
      (into [] (.zrangebylex this k min max o c))))
+
+  ScriptingCommands
+  (eval 
+    ([this ^String script t ks]
+     (.eval this script (output-type t) ^objects (into-array Object ks)))
+    ([this ^String script t ks vs]
+     (.eval this script (output-type t) 
+            ^objects (into-array Object ks)
+            ^objects (into-array Object vs))))
+  (evalsha 
+    ([this ^String digest t ks]
+     (.evalsha this digest (output-type t) ^objects (into-array Object ks)))
+    ([this ^String digest t ks vs]
+     (.evalsha this digest (output-type t) 
+               ^objects (into-array Object ks)
+               ^objects (into-array Object vs))))
+  (script-exists? [this digests]
+    (.scriptExists this ^"[Ljava.lang.String;" (into-array String digests)))
+  (script-flush [this]
+    (.scriptFlush this))
+  (script-kill [this]
+    (.scriptKill this))
+  (scirpt-load [this script]
+    (.scriptLoad this script))
+  (digest [this script]
+    (.digest this script))
 
   ServerCommands
   (flushall [this]

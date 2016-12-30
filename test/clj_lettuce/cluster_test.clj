@@ -222,5 +222,56 @@
       (is (= false (redis/sismember   *cmds* "s1" m))))))
 
 (deftest sortedset-commands-test
-  )
+
+  (testing "add, incr, count sorted set members"
+    (is (= 1   (redis/zadd     *cmds* "z1" 0.1 :a)))
+    (is (= 1   (redis/zadd     *cmds* "z1" :nx 0.2 :b)))
+    (is (= 3   (redis/mzadd    *cmds* "z1" [[0.3 :c] [0.4 :d] [0.5 :e]])))
+    (is (= 5   (redis/zcard    *cmds* "z1")))
+    (is (= 0.6 (redis/zaddincr *cmds* "z1" 0.1 :e)))
+    (is (= 0.6 (redis/zscore   *cmds* "z1" :e)))
+    (is (= 0.5 (redis/zincrby  *cmds* "z1" -0.1 :e)))
+    (is (= 3   (redis/zcount   *cmds* "z1" 0.3 0.5)))
+    (is (= 0   (redis/zrank    *cmds* "z1" :a)))
+    (is (= 4   (redis/zrevrank *cmds* "z1" :a))))
+
+  (testing "range, revrange, scan sorted set"
+    (is (= [:a :b :c]
+           (redis/zrange *cmds* "z1" 0 2)))
+    (is (= [[0.1 :a] [0.2 :b] [0.3 :c]]
+           (redis/zrange-withscores *cmds* "z1" 0 2)))
+    (is (= [:c :d :e]
+           (redis/zrangebyscore *cmds* "z1" 0.3 0.5)))
+    (is (= [[0.3 :c] [0.4 :d] [0.5 :e]]
+           (redis/zrangebyscore-withscores *cmds* "z1" 0.3 0.5)))
+    (is (= [:e :d :c]
+           (redis/zrevrange *cmds* "z1" 0 2)))
+    (is (= [[0.5 :e] [0.4 :d] [0.3 :c]]
+           (redis/zrevrange-withscores *cmds* "z1" 0 2)))
+    (is (= [:e :d :c]
+           (redis/zrevrangebyscore *cmds* "z1" 0.5 0.3)))
+    (is (= [[0.5 :e] [0.4 :d] [0.3 :c]]
+           (redis/zrevrangebyscore-withscores *cmds* "z1" 0.5 0.3)))
+    (is (= #{[0.1 :a] [0.2 :b] [0.3 :c] [0.4 :d] [0.5 :e]}
+           (->> (redis/zscan *cmds* "z1" (redis/scan-cursor))
+                (redis/scan-seq)
+                (take 5)
+                (apply into #{})))))
+
+  (testing "deleting sorted set members"
+    (is (= 1  (redis/zrem  *cmds* "z1" :a)))
+    (is (= :b (first (redis/zrange *cmds* "z1" 0 0))))
+    (is (= 2  (redis/mzrem *cmds* "z1" [:b :c])))
+    (is (= :d (first (redis/zrange *cmds* "z1" 0 0))))
+    (is (= 1  (redis/zremrangebyrank *cmds* "z1" 0 0)))
+    (is (= :e (first (redis/zrange *cmds* "z1" 0 0))))
+    (is (= 1  (redis/zremrangebyscore *cmds* "z1" 0.5 0.5)))
+    (is (= 0  (redis/zcard *cmds* "z1"))))
+
+  (testing "lexicographical order based commands"
+    (with-str-cmds
+      (redis/mzadd *cmds* "z2" [[0.0 "a"] [0.0 "b"] [0.0 "c"] [0.0 "d"] [0.0 "e"]])
+      (is (= ["a" "b" "c"] 
+             (redis/zrangebylex *cmds* "z2" "-" "[c")))
+      (is (= 5 (redis/zlexcount *cmds* "z2" "-" "+"))))))
 

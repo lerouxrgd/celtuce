@@ -2,12 +2,12 @@
   (:import 
    (com.lambdaworks.redis ZAddArgs ZAddArgs$Builder ZStoreArgs)))
 
-(defn zadd-args [opt]
+(defn ^ZAddArgs zadd-args [opt]
   (case opt
     :nx (ZAddArgs$Builder/nx)
     :xx (ZAddArgs$Builder/xx)
     :ch (ZAddArgs$Builder/ch)
-    (throw (ex-info "invalid opt" {:opt opt}))))
+    (throw (ex-info "invalid zadd opt" {:opt opt}))))
 
 (defn zstore-args [agg & weights]
   (cond-> (ZStoreArgs.)

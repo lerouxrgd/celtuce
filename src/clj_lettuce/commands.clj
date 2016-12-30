@@ -6,13 +6,15 @@
    [clj-lettuce.args.migrate]
    [clj-lettuce.args.sort]
    [clj-lettuce.args.bitfield]
-   [clj-lettuce.args.set]))
+   [clj-lettuce.args.set]
+   [clj-lettuce.args.zset]))
 
 (import-vars [clj-lettuce.args.scan     scan-cursor scan-args scan-res scan-seq])
 (import-vars [clj-lettuce.args.migrate  migrate-args])
 (import-vars [clj-lettuce.args.sort     sort-args])
 (import-vars [clj-lettuce.args.bitfield bitfield-args])
 (import-vars [clj-lettuce.args.set      set-args])
+(import-vars [clj-lettuce.args.zset     zstore-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -295,7 +297,7 @@
                     "Return a range of members in a sorted set, by lexicographical range")
   (zremrangebylex   [this k min max]
                     "Remove all members in a sorted set in a given lexicographical range")
-  ;; with scores commands
+  ;; with scores range commands
   (zrange-withscores           [this k s e])
   (zrangebyscore-withscores    [this k min max] [this k min max o c])
   (zrevrange-withscores        [this k s e])

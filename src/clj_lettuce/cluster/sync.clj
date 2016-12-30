@@ -1,7 +1,8 @@
 (ns clj-lettuce.cluster.sync
   (:refer-clojure :exclude [get set keys sort type])
   (:require 
-   [clj-lettuce.commands :refer :all])
+   [clj-lettuce.commands :refer :all]
+   [clj-lettuce.args.zset :refer [zadd-args]])
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
@@ -275,18 +276,16 @@
      (.sscan this k c)))
 
   SortedSetCommands
-  (mzadd
-    ([this k sms]
-     (.zadd this k ^objects (into-array Object sms)))
-    ([this k ^ZAddArgs args sms]
-     (.zadd this k args ^objects (into-array Object sms))))
-  (mzrem [this k ms]
-    (.zrem this k ^objects (into-array Object ms)))
   (zadd
     ([this k ^double s m]
      (.zadd this k s m))
-    ([this k ^ZAddArgs args ^Double s m]
-     (.zadd this k args s m)))
+    ([this k opt ^Double s m]
+     (.zadd this k (zadd-args opt) s m)))
+  (mzadd
+    ([this k sms]
+     (.zadd this k ^objects (into-array Object (mapcat identity sms))))
+    ([this k opt sms]
+     (.zadd this k (zadd-args opt) ^objects (into-array Object (mapcat identity sms)))))
   (zaddincr [this k ^double s m]
     (.zaddincr this k s m))
   (zcard [this k]
@@ -324,6 +323,8 @@
     (.zrank this k m))
   (zrem [this k m]
     (.zrem this k ^objects (into-array Object [m])))
+  (mzrem [this k ms]
+    (.zrem this k ^objects (into-array Object ms)))
   (zremrangebyrank [this k ^long s ^long e]
     (.zremrangebyrank this k s e))
   (zremrangebyscore [this k ^Double min ^Double max]
@@ -370,9 +371,9 @@
     (.zremrangebylex this k min max))
   (zrangebylex 
     ([this k ^String min ^String max]
-     (.zrangebylex this k min max))
+     (into [] (.zrangebylex this k min max)))
     ([this k ^String min ^String max ^Long o ^Long c]
-     (.zrangebylex this k min max o c)))
+     (into [] (.zrangebylex this k min max o c))))
 
   ServerCommands
   (flushall [this]

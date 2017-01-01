@@ -18,296 +18,296 @@
 
 (defprotocol HashCommands
   "Redis Hash Commands"
-  (hdel         [this k f]
+  (hdel         [this key field]
                 "Delete one hash field")
-  (hexists      [this k f]
+  (hexists      [this key field]
                 "Determine if a hash field exists")
-  (hget         [this k f]
+  (hget         [this key field]
                 "Get the value of a hash field")
-  (hincrby      [this k f a]
+  (hincrby      [this key field amount]
                 "Increment the value of a hash field by long")
-  (hincrbyfloat [this k f a]
+  (hincrbyfloat [this key field amount]
                 "Increment the value of a hash field by double")
-  (hgetall      [this k]
+  (hgetall      [this key]
                 "Get all the fields and values in a hash")
-  (hkeys        [this k]
+  (hkeys        [this key]
                 "Get all the fields in a hash")
-  (hlen         [this k]
+  (hlen         [this key]
                 "Get the number of fields in a hash")
-  (hmdel        [this k fs]
+  (hmdel        [this key fields]
                 "Delete multiple hash fields")
-  (hmget        [this k fs]
+  (hmget        [this key fields]
                 "Get the values of all the given hash fields")
-  (hmset        [this k m]
-                "Set multiple hash fields to multiple values")
-  (hscan        [this k] [this k c] [this k c args]
+  (hmset        [this key map]
+                "Set multiple hash fields to multiple values (map)")
+  (hscan        [this key] [this key cursor] [this key cursor args]
                 "Incrementally iterate hash fields and associated values")
-  (hset         [this k f v]
+  (hset         [this key field val]
                 "Set the string value of a hash field")
-  (hsetnx       [this k f v]
+  (hsetnx       [this key field val]
                 "Set the value of a hash field, only if it doesn't exist")
-  (hstrlen      [this k f]
+  (hstrlen      [this key field]
                 "Get the string length of the field value in a hash")
-  (hvals        [this k]
+  (hvals        [this key]
                 "Get all the values in a hash"))
 
 (defprotocol KeyCommands
   "Redis Key Commands"
-  (del          [this k]
+  (del          [this key]
                 "Delete one key")
-  (mdel         [this ks]
+  (mdel         [this keys]
                 "Delete multiple keys")
-  (unlink       [this k]
+  (unlink       [this key]
                 "Unlink one key (non blocking DEL)")
-  (munlink      [this ks]
+  (munlink      [this keys]
                 "Unlink multiple keys (non blocking DEL)")
-  (dump         [this k]
+  (dump         [this key]
                 "Serialized version of the value stored at the key")
-  (exists       [this k]
+  (exists       [this key]
                 "Determine whether key exists")
-  (expire       [this k sec]
+  (expire       [this key sec]
                 "Set a key's time to live in seconds")
-  (expireat     [this k ts-sec]
+  (expireat     [this key ts-sec]
                 "Set the expiration for a key as a UNIX timestamp")
   (keys         [this pattern]
                 "Find all keys matching the given pattern")
-  (mexists      [this ks]
+  (mexists      [this keys]
                 "Determine how many keys exist")
-  (migrate      [this h p db ms args] 
+  (migrate      [this host port db timeout-ms args] 
                 "Transfer a key from a Redis instance to another one")
-  (move         [this k db]
+  (move         [this key db]
                 "Move a key to another database")
-  (obj-encoding [this k]
+  (obj-encoding [this key]
                 "Internal representation used to store the key's value")
-  (obj-idletime [this k]
+  (obj-idletime [this key]
                 "Number of sec the key's value is idle (no read/write)")
-  (obj-refcount [this k]
+  (obj-refcount [this key]
                 "Number of references of the key's value")
-  (persist      [this k]
+  (persist      [this key]
                 "Remove the expiration from a key")
-  (pexpire      [this k ms]
+  (pexpire      [this key ttl-ms]
                 "Set a key's time to live in milliseconds")
-  (pexpireat    [this k ts-ms]
+  (pexpireat    [this key ts-ms]
                 "Set the expiration for a key as a UNIX timestamp in ms")
-  (pttl         [this k]
+  (pttl         [this key]
                 "Get the time to live for a key in milliseconds")
   (randomkey    [this]
                 "Return a random key from the keyspace")
-  (rename       [this k1 k2]
+  (rename       [this key1 key2]
                 "Rename a key")
-  (renamenx     [this k1 k2]
+  (renamenx     [this key1 key2]
                 "Rename a key, only if the new key does not exist")
-  (restore      [this k ttl v]
+  (restore      [this key ttl val]
                 "Create a key using a serialized value obtained by DUMP")
-  (sort         [this k] [this k args]
+  (sort         [this key] [this key args]
                 "Sort the elements in a list, set or sorted set")
-  (sort-store   [this k args d]
+  (sort-store   [this key args dest]
                 "Sort and store the result in destination key")
-  (touch        [this k]
+  (touch        [this key]
                 "Touch one key. Sets the key last accessed time")
-  (mtouch       [this ks]
+  (mtouch       [this keys]
                 "Touch multiple keys. Sets the keys last accessed time")
-  (ttl          [this k]
+  (ttl          [this key]
                 "Get the time to live for a key")
-  (type         [this k]
+  (type         [this key]
                 "Determine the type stored at key")
-  (scan         [this] [this c] [this c args] 
+  (scan         [this] [this cursor] [this cursor args] 
                 "Incrementally iterate the keys space"))
 
 (defprotocol StringsCommands
   "Redis Strings Commands"
-  (append      [this k v]
+  (append      [this key val]
                "Append a value to a key")
-  (bitcount    [this k] [this k s e]
+  (bitcount    [this key] [this key start end]
                "Count the bits set to 1 in a string")
-  (bitfield    [this k args]
+  (bitfield    [this key args]
                "Execute BITFIELD with its subcommands")
-  (bitop-and   [this d ks]
+  (bitop-and   [this dest keys]
                "Perform bitwise AND between strings")
-  (bitop-not   [this d k]
+  (bitop-not   [this dest key]
                "Perform bitwise NOT between strings")
-  (bitop-or    [this d ks]
+  (bitop-or    [this dest keys]
                "Perform bitwise OR between strings")
-  (bitop-xor   [this d ks]
+  (bitop-xor   [this dest keys]
                "Perform bitwise XOR between strings")
-  (bitpos      [this k state] [this k state s e]
+  (bitpos      [this key state] [this key state start end]
                "Find first bit set or clear in a string")
-  (decr        [this k]
+  (decr        [this key]
                "Decrement the integer value of a key by one")
-  (decrby      [this k a]
+  (decrby      [this key amount]
                "Decrement the integer value of a key by the given number")
-  (get         [this k]
+  (get         [this key]
                "Get the value of a key")
-  (mget        [this ks]
+  (mget        [this keys]
                "Get the values of all the given keys")
-  (getbit      [this k o]
+  (getbit      [this key offset]
                "Get the bit value at offset in the key's string value")
-  (getrange    [this k s e]
+  (getrange    [this key start end]
                "Get a substring of the string stored at a key")
-  (getset      [this k v]
+  (getset      [this key val]
                "Set the string value of a key and return its old value")
-  (incr        [this k]
+  (incr        [this key]
                "Increment the integer value of a key by one")
-  (incrby      [this k a]
+  (incrby      [this key amount]
                "Increment the integer value of a key by the given amount")
-  (incrbyfloat [this k a]
+  (incrbyfloat [this key amount]
                "Increment the float value of a key by the given amount")
-  (set         [this k v] [this k v args]
+  (set         [this key val] [this key val args]
                "Set the string value of a key")
-  (mset        [this m]
-               "Set multiple keys to multiple values")
-  (setbit      [this k o v]
+  (mset        [this map]
+               "Set multiple keys to multiple values (map)")
+  (setbit      [this key offset val]
                "Sets or clears the bit at offset in the key's string value")
-  (setex       [this k sec v]
+  (setex       [this key ttl-sec val]
                "Set the value and expiration of a key")
-  (psetex      [this k ms v]
+  (psetex      [this key ttl-ms val]
                "Set the value and expiration in milliseconds of a key")
-  (setnx       [this k v]
+  (setnx       [this key val]
                "Set the value of a key, only if the key does not exist")
-  (msetnx      [this m]
+  (msetnx      [this map]
                "Like mset, but only if none of the keys exist")
-  (setrange    [this k o v]
+  (setrange    [this key offset val]
                "Overwrite part of a string at key starting at the offset")
-  (strlen      [this k]
+  (strlen      [this key]
                "Get the length of the value stored in a key"))
 
 (defprotocol ListCommands
   "Redis List Commands"
-  (blpop      [this sec ks]
+  (blpop      [this timeout-sec keys]
               "Remove and get the first elem (block until there's one)")
-  (brpop      [this sec ks]
+  (brpop      [this timeout-sec keys]
               "Remove and get the last elem (block until there's one)")
-  (brpoplpush [this sec s d]
+  (brpoplpush [this timeout-sec src dest]
               "Pop and push to another list, return the elem (blocking)")
-  (lindex     [this k idx]
+  (lindex     [this key idx]
               "Get an element from a list by its index")
-  (linsert    [this k b? p v]
+  (linsert    [this key before? pivot val]
               "Insert an elem before or after another elem in a list")
-  (llen       [this k]
+  (llen       [this key]
               "Get the length of a list")
-  (lpop       [this k]
+  (lpop       [this key]
               "Remove and get the first element in a list")
-  (lpush      [this k v]
+  (lpush      [this key val]
               "Prepend one value to a list")
-  (mlpush     [this k vs]
+  (mlpush     [this key vals]
               "Prepend multiple values to a list")
-  (lpushx     [this k v]
+  (lpushx     [this key val]
               "Prepend a value to a list, only if the list exists")
-  (lrange     [this k s e]
+  (lrange     [this key start end]
               "Get a range of elements from a list")
-  (lrem       [this k c v]
+  (lrem       [this key count val]
               "Remove elements from a list")
-  (lset       [this k idx v]
+  (lset       [this key idx v]
               "Set the value of an element in a list by its index")
-  (ltrim      [this k s e]
+  (ltrim      [this key start end]
               "Trim a list to the specified range")
-  (rpop       [this k]
+  (rpop       [this key]
               "Remove and get the last element in a list")
-  (rpoplpush  [this s d]
+  (rpoplpush  [this src dest]
               "Pop and push to another list, return the elem")
-  (rpush      [this k v]
+  (rpush      [this key val]
               "Append one value to a list")
-  (mrpush     [this k vs]
+  (mrpush     [this key vals]
               "Append multiple values to a list")
-  (rpushx     [this k v]
+  (rpushx     [this key val]
               "Append a value to a list, only if the list exists"))
 
 (defprotocol SetCommands
   "Redis Set Commands"
-  (sadd        [this k m]
+  (sadd        [this key member]
                "Add one member to a set")
-  (msadd       [this k ms]
+  (msadd       [this key members]
                "Add multiple members to a set")
-  (scard       [this k]
+  (scard       [this key]
                "Get the number of members in a set")
-  (sdiff       [this ks]
+  (sdiff       [this keys]
                "Subtract multiple sets")
-  (sdiffstore  [this d ks]
+  (sdiffstore  [this dest keys]
                "Subtract multiple sets and store the resulting set in a key")
-  (sinter      [this ks]
+  (sinter      [this keys]
                "Intersect multiple sets")
-  (sinterstore [this d ks]
+  (sinterstore [this dest keys]
                "Intersect multiple sets and store the resulting set in a key")
-  (sismember   [this k v]
+  (sismember   [this key val]
                "Determine if a given value is a member of a set")
-  (smove       [this k d m]
+  (smove       [this key dest member]
                "Move a member from one set to another")
-  (smembers    [this k]
+  (smembers    [this key]
                "Get all the members in a set")
-  (spop        [this k] [this k c]
+  (spop        [this key] [this key count]
                "Remove and return one or multiple random members from a set")
-  (srandmember [this k] [this k c]
+  (srandmember [this key] [this key count]
                "Get one or multiple random members from a set")
-  (srem        [this k m]
+  (srem        [this key member]
                "Remove one member from a set")
-  (msrem       [this k ms]
+  (msrem       [this key members]
                "Remove multiple members from a set")
-  (sunion      [this ks]
+  (sunion      [this keys]
                "Add multiple sets")
-  (sunionstore [this d ks]
+  (sunionstore [this dest keys]
                "Add multiple sets and store the resulting set in a key")
-  (sscan       [this k] [this k c] [this k c args]
+  (sscan       [this key] [this key cursor] [this key cursor args]
                "Incrementally iterate set elements"))
 
 (defprotocol SortedSetCommands
   "Redis Sorted Set Commands"
-  (zadd             [this k s m] [this k args s m]
+  (zadd             [this key score member] [this key args score member]
                     "Add one member to a sorted set (update score if exists)")
-  (mzadd            [this k sms] [this k args sms]
+  (mzadd            [this key scored-members] [this key args scored-members]
                     "Add multiple members to a sorted set (update scores if exist)")
-  (zaddincr         [this k s m]
+  (zaddincr         [this key score member]
                     "Increment the score of a member in a sorted set")
-  (zcard            [this k]
+  (zcard            [this key]
                     "Get the number of members in a sorted set")
-  (zcount           [this k min max]
+  (zcount           [this key min max]
                     "Count the members in a sorted set with scores within [min max]")
-  (zincrby          [this k a m]
+  (zincrby          [this key amount member]
                     "Increment the score of a member in a sorted set")
-  (zinterstore      [this d ks] [this d args ks]
+  (zinterstore      [this dest keys] [this dest args keys]
                     "Intersect multiple sorted sets ks, store the result in a new key d")
-  (zrange           [this k s e]
+  (zrange           [this key start end]
                     "Return a range of members in a sorted set, by index (scores asc)")
-  (zrangebyscore    [this k min max] [this k min max o c]
+  (zrangebyscore    [this key min max] [this key min max offset count]
                     "Return a range of members in a sorted set, by score (scores asc)")
-  (zrank            [this k m]
+  (zrank            [this key member]
                     "Determine the index of a member in a sorted set (score asc)")
-  (zrem             [this k m]
+  (zrem             [this key member]
                     "Remove one member from a sorted set")
-  (mzrem            [this k ms]
+  (mzrem            [this key members]
                     "Remove multiple members from a sorted set")
-  (zremrangebyrank  [this k s e]
+  (zremrangebyrank  [this key start end]
                     "Remove all members in a sorted set within the given indexes")
-  (zremrangebyscore [this k min max]
+  (zremrangebyscore [this key min max]
                     "Remove all members in a sorted set within the given scores")
-  (zrevrange        [this k s e]
+  (zrevrange        [this key start end]
                     "Return a range of members in a sorted set, by index (scores desc)")
-  (zrevrangebyscore [this k min max] [this k min max o c]
+  (zrevrangebyscore [this key min max] [this key min max offset count]
                     "Return a range of members in a sorted set, by score (scores desc)")
-  (zrevrank         [this k m]
+  (zrevrank         [this key member]
                     "Determine the index of a member in a sorted set (score desc)")
-  (zscan            [this k] [this k c] [this k c args]
+  (zscan            [this key] [this key cursor] [this key cursor args]
                     "Incrementally iterate sorted sets elements and associated scores")
-  (zscore           [this k m]
+  (zscore           [this key member]
                     "Get the score associated with the given member in a sorted set.")
-  (zunionstore      [this d ks] [this d args ks]
+  (zunionstore      [this dest keys] [this dest args keys]
                     "Add multiple sorted sets ks, store the result in a new key d")
-  (zlexcount        [this k min max]
+  (zlexcount        [this key min max]
                     "Count the members in a sorted set in a given lexicographical range")
-  (zrangebylex      [this k min max] [this k min max o c]
+  (zrangebylex      [this key min max] [this key min max offset count]
                     "Return a range of members in a sorted set, by lexicographical range")
-  (zremrangebylex   [this k min max]
+  (zremrangebylex   [this key min max]
                     "Remove all members in a sorted set in a given lexicographical range")
   ;; with scores range commands
-  (zrange-withscores           [this k s e])
-  (zrangebyscore-withscores    [this k min max] [this k min max o c])
-  (zrevrange-withscores        [this k s e])
-  (zrevrangebyscore-withscores [this k min max] [this k min max o c]))
+  (zrange-withscores           [this key start end])
+  (zrangebyscore-withscores    [this key min max] [this key min max offset count])
+  (zrevrange-withscores        [this key start end])
+  (zrevrangebyscore-withscores [this key min max] [this key min max offset count]))
 
 (defprotocol ScriptingCommands
   "Redis Scripting Commands (Lua 5.1)"
-  (eval           [this script type ks] [this script type ks vs]
+  (eval           [this script type keys] [this script type keys vals]
                   "Execute a Lua script server side")
-  (evalsha        [this digest type ks] [this digest type ks vs]
+  (evalsha        [this digest type keys] [this digest type keys vals]
                   "Evaluates a script cached on the server side by its SHA1 digest")
   (script-exists? [this digests]
                   "Check existence of scripts in the script cache")

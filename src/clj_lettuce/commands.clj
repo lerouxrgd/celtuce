@@ -1,5 +1,5 @@
 (ns clj-lettuce.commands
-  (:refer-clojure :exclude [get set keys sort type eval])
+  (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [potemkin :refer [import-vars]]
    [clj-lettuce.args.scan]
@@ -322,5 +322,78 @@
 
 (defprotocol ServerCommands
   "Redis Server Commands"
-  (flushall [this] "Remove all keys from all databases"))
+  (bgrewriteaof      [this]
+                     "Asynchronously rewrite the append-only file")
+  (bgsave            [this]
+                     "Asynchronously save the dataset to disk")
+  (client-getname    [this]
+                     "Get the current connection name")
+  (client-setname    [this name]
+                     "Set the current connection name")
+  (client-kill       [this addr-or-args]
+                     "Kill the connection of a client identified by ip:port, or args")
+  (client-pause      [this timeout-ms]
+                     "Stop processing commands from clients for some time")
+  (client-list       [this]
+                     "Get the list of client connections")
+  (command           [this]
+                     "Return an array reply of details about all Redis commands")
+  (command-info      [this commands]
+                     "Return an array reply of details about the requested commands")
+  (command-count     [this]
+                     "Get total number of Redis commands")
+  (config-get        [this param]
+                     "Get the value of a configuration parameter")
+  (config-resetstat  [this]
+                     "Reset the stats returned by INFO")
+  (config-rewrite    [this]
+                     "Rewrite the configuration file with the in memory configuration")
+  (config-set        [this param val]
+                     "Set a configuration parameter to the given value")
+  (dbsize            [this]
+                     "Return the number of keys in the selected database")
+  (debug-crash-recov [this delay-ms]
+                     "Crash and recover")
+  (debug-htstats     [this db]
+                     "Get debugging information about the internal hash-table state")
+  (debug-object      [this key]
+                     "Get debugging information about a key")
+  (debug-oom         [this]
+                     "Make the server crash: Out of memory")
+  (debug-segfault    [this]
+                     "Make the server crash: Invalid pointer access")
+  (debug-reload      [this]
+                     "Save RDB, clear the database and reload RDB")
+  (debug-restart     [this delay-ms]
+                     "Restart the server gracefully")
+  (debug-sds-len     [this key]
+                     "Get debugging information about the internal SDS length")
+  (flushall          [this]
+                     "Remove all keys from all databases")
+  (flushall-async    [this]
+                     "Remove all keys asynchronously from all databases")
+  (flushdb           [this]
+                     "Remove all keys from the current database")
+  (flushdb-async     [this]
+                     "Remove all keys asynchronously from the current database")
+  (info              [this] [this section]
+                     "Get information and statistics about the server")
+  (lastsave          [this]
+                     "Get the UNIX time stamp of the last successful save to disk")
+  (save              [this]
+                     "Synchronously save the dataset to disk")
+  (shutdown          [this save?]
+                     "Synchronously save the dataset to disk and shutdown the server")
+  (slave-of          [this host port]
+                     "Make the server a slave of another server, or promote it as master")
+  (slave-no-one      [this]
+                     "Promote server as master")
+  (slowlog-get       [this] [this count]
+                     "Read the slow log")
+  (slowlog-len       [this]
+                     "Obtaining the current length of the slow log")
+  (slowlog-reset     [this]
+                     "Resetting the slow log")
+  (time              [this]
+                     "Return the current server time"))
 

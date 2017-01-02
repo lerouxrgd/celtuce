@@ -1,5 +1,5 @@
 (ns clj-lettuce.cluster.sync
-  (:refer-clojure :exclude [get set keys sort type eval])
+  (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [clj-lettuce.commands :refer :all]
    [clj-lettuce.args.zset :refer [zadd-args]]
@@ -404,7 +404,81 @@
     (.digest this script))
 
   ServerCommands
+  (bgrewriteaof [this]
+    )
+  (bgsave [this]
+    )
+  (client-getname [this]
+    )
+  (client-setname [this name]
+    )
+  (client-kill [this addr-or-args]
+    )
+  (client-pause [this timeout-ms]
+    )
+  (client-list [this]
+    )
+  (command [this]
+    )
+  (command-info [this commands]
+    )
+  (command-count [this]
+    )
+  (config-get [this param]
+    )
+  (config-resetstat [this]
+    )
+  (config-rewrite [this]
+    )
+  (config-set [this param val]
+    )
+  (dbsize [this]
+    )
+  (debug-crash-and-recover [this delay-ms]
+    )
+  (debug-htstats [this db]
+    )
+  (debug-object [this key]
+    )
+  (debug-oom [this]
+    )
+  (debug-segfault [this]
+    )
+  (debug-reload [this]
+    )
+  (debug-restart [this delay-ms]
+    )
+  (debug-sds-len [this key]
+    )
   (flushall [this]
     (.flushall this))
+  (flushall-async [this]
+    )
+  (flushdb [this]
+    )
+  (flushdb-async [this]
+    )
+  (info 
+    ([this]) 
+    ([this section]))
+  (lastsave [this]
+    )
+  (save [this]
+    )
+  (shutdown [this save?]
+    )
+  (slave-of [this host port]
+    )
+  (slave-no-one [this]
+    )
+  (slowlog-get 
+    ([this]) 
+    ([this count]))
+  (slowlog-len [this]
+    )
+  (slowlog-reset [this]
+    )
+  (time [this]
+    )
 
   )

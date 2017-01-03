@@ -7,7 +7,8 @@
    [clj-lettuce.args.sort]
    [clj-lettuce.args.bitfield]
    [clj-lettuce.args.set]
-   [clj-lettuce.args.zset]))
+   [clj-lettuce.args.zset]
+   [clj-lettuce.args.kill]))
 
 (import-vars [clj-lettuce.args.scan     scan-cursor scan-args scan-res scan-seq])
 (import-vars [clj-lettuce.args.migrate  migrate-args])
@@ -15,6 +16,7 @@
 (import-vars [clj-lettuce.args.bitfield bitfield-args])
 (import-vars [clj-lettuce.args.set      set-args])
 (import-vars [clj-lettuce.args.zset     zstore-args])
+(import-vars [clj-lettuce.args.kill     kill-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -384,9 +386,9 @@
                      "Synchronously save the dataset to disk")
   (shutdown          [this save?]
                      "Synchronously save the dataset to disk and shutdown the server")
-  (slave-of          [this host port]
+  (slaveof           [this host port]
                      "Make the server a slave of another server, or promote it as master")
-  (slave-no-one      [this]
+  (slaveof-no-one    [this]
                      "Promote server as master")
   (slowlog-get       [this] [this count]
                      "Read the slow log")

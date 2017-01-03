@@ -8,7 +8,7 @@
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
     ScanCursor ScriptOutputType
-    ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs 
+    ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
     ZStoreArgs ZAddArgs ScoredValue)
    (java.util Map)))
 
@@ -405,80 +405,86 @@
 
   ServerCommands
   (bgrewriteaof [this]
-    )
+    (.bgrewriteaof this))
   (bgsave [this]
-    )
+    (.bgsave this))
   (client-getname [this]
-    )
+    (.clientGetname this))
   (client-setname [this name]
-    )
+    (.clientSetname this name))
   (client-kill [this addr-or-args]
-    )
-  (client-pause [this timeout-ms]
-    )
+    (if (instance? KillArgs addr-or-args)
+      (.clientKill this ^KillArgs addr-or-args)
+      (.clientKill this ^String addr-or-args)))
+  (client-pause [this ^long timeout-ms]
+    (.clientPause this timeout-ms))
   (client-list [this]
-    )
+    (.clientList this))
   (command [this]
-    )
+    (into [] (.command this)))
   (command-info [this commands]
-    )
+    (into [] (.commandInfo this ^"[Ljava.lang.String;" (into-array String commands))))
   (command-count [this]
-    )
-  (config-get [this param]
-    )
+    (.commandCount this))
+  (config-get [this ^String param]
+    (into [] (.configGet this param)))
   (config-resetstat [this]
-    )
+    (.configResetstat this))
   (config-rewrite [this]
-    )
-  (config-set [this param val]
-    )
+    (.configRewrite this))
+  (config-set [this ^String param ^String val]
+    (.configSet this param val))
   (dbsize [this]
-    )
-  (debug-crash-and-recover [this delay-ms]
-    )
-  (debug-htstats [this db]
-    )
+    (.dbsize this))
+  (debug-crash-recov [this ^long delay-ms]
+    (.debugCrashAndRecover this delay-ms))
+  (debug-htstats [this ^Integer db]
+    (.debugHtstats this db))
   (debug-object [this key]
-    )
+    (.debugObject this key))
   (debug-oom [this]
-    )
+    (.debugOom this))
   (debug-segfault [this]
-    )
+    (.debugSegfault this))
   (debug-reload [this]
-    )
-  (debug-restart [this delay-ms]
-    )
+    (.debugReload this))
+  (debug-restart [this ^long delay-ms]
+    (.debugRestart this delay-ms))
   (debug-sds-len [this key]
-    )
+    (.debugSdslen this key))
   (flushall [this]
     (.flushall this))
   (flushall-async [this]
-    )
+    (.flushallAsync this))
   (flushdb [this]
-    )
+    (.flushdb this))
   (flushdb-async [this]
-    )
+    (.flushdbAsync this))
   (info 
-    ([this]) 
-    ([this section]))
+    ([this]
+     (.info this)) 
+    ([this ^String section]
+     (.info this section)))
   (lastsave [this]
-    )
+    (.lastsave this))
   (save [this]
-    )
+    (.save this))
   (shutdown [this save?]
-    )
-  (slave-of [this host port]
-    )
-  (slave-no-one [this]
-    )
+    (.shutdown this save?))
+  (slaveof [this ^String host ^Integer port]
+    (.slaveof this host port))
+  (slaveof-no-one [this]
+    (.slaveofNoOne this))
   (slowlog-get 
-    ([this]) 
-    ([this count]))
+    ([this]
+     (into [] (.slowlogGet this))) 
+    ([this ^Integer count]
+     (into [] (.slowlogGet this count))))
   (slowlog-len [this]
-    )
+    (.slowlogLen this))
   (slowlog-reset [this]
-    )
+    (.slowlogReset this))
   (time [this]
-    )
+    (into [] (.time this)))
 
   )

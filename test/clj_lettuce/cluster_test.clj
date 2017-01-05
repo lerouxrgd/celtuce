@@ -287,3 +287,15 @@
         (is (thrown? com.lambdaworks.redis.RedisCommandExecutionException
                      (redis/evalsha *cmds* sha :integer [])))))))
 
+(deftest hll-commands-test
+  (let [err 0.81
+        close? (fn [x y] (< (- x (* x err)) y (+ x (* x err))))]
+    (testing "basic hll usage"
+      (is (= 1 (redis/pfadd  *cmds* "pf1" 0)))
+      (is (= 1 (redis/mpfadd *cmds* "pf1" (range 1 1000))))
+      (is (close? 1000 (redis/pfcount  *cmds* "pf1")))
+      (is (= 0 (redis/mpfadd *cmds* "pf1" (range 1000))))
+      (is (close? 1000 (redis/pfcount  *cmds* "pf1")))
+      (is (= 1 (redis/mpfadd *cmds* "pf1" (range 1000 2000))))
+      (is (close? 2000 (redis/pfcount  *cmds* "pf1"))))))
+

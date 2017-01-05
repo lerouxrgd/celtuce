@@ -399,3 +399,16 @@
   (time              [this]
                      "Return the current server time"))
 
+(defprotocol HLLCommands
+  "Redis HLL Commands"
+  (pfadd    [this key val]
+            "Add the specified element to the specified HyperLogLog")
+  (mpfadd   [this key vals]
+            "Add the specified elements to the specified HyperLogLog")
+  (pfmerge  [this dest keys]
+            "Merge N different HyperLogLogs into a single one")
+  (pfcount  [this key]
+            "Return the approximated cardinality of the set (HyperLogLog) at key")
+  (mpfcount [this keys]
+            "Return the approximated cardinality of the sets (HyperLogLog) at keys"))
+

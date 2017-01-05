@@ -423,7 +423,8 @@
   (command [this]
     (into [] (.command this)))
   (command-info [this commands]
-    (into [] (.commandInfo this ^"[Ljava.lang.String;" (into-array String commands))))
+    (into (empty commands) 
+          (.commandInfo this ^"[Ljava.lang.String;" (into-array String commands))))
   (command-count [this]
     (.commandCount this))
   (config-get [this ^String param]
@@ -486,5 +487,17 @@
     (.slowlogReset this))
   (time [this]
     (into [] (.time this)))
+
+  HLLCommands
+  (pfadd [this key val]
+    (.pfadd this key ^objects (into-array Object [val])))
+  (mpfadd [this key vals]
+    (.pfadd this key ^objects (into-array Object vals)))
+  (pfmerge [this dest keys]
+    (.pfmerge this dest ^objects (into-array Object keys)))
+  (pfcount [this key]
+    (.pfcount this ^objects (into-array Object [key])))
+  (mpfcount [this keys]
+    (.pfcount this ^objects (into-array Object keys)))
 
   )

@@ -9,4 +9,4 @@
     copy    (.copy)
     replace (.replace)
     k       (.key k)
-    ks      (.keys ^"[Ljava.lang.Object;" (into-array Object ks))))
+    ks      (.keys ^objects (into-array Object ks))))

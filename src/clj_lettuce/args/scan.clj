@@ -62,7 +62,7 @@
     `(cond 
        ;; scan-cmd is: SCAN
        ;; a1 is ScanCursor, a2 is ScanArgs
-       (or (every? nil? [~a1 ~a1 ~a2]) (instance? ScanCursor ~a1))
+       (or (every? nil? [~a1 ~a2 ~a3]) (instance? ScanCursor ~a1))
        (scan-seq* (partial ~scan-cmd ~this) (or ~a1 (scan-cursor)) ~a2)
        ;; scan-cmd is: SSCAN, HSCAN, or ZSCAN
        ;; a1 is a key, a2 is ScanCursor, a3 is ScanArgs

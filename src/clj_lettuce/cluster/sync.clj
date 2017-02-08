@@ -3,13 +3,15 @@
   (:require 
    [clj-lettuce.commands :refer :all]
    [clj-lettuce.args.zset :refer [zadd-args]]
-   [clj-lettuce.args.scripting :refer [output-type]])
+   [clj-lettuce.args.scripting :refer [output-type]]
+   [clj-lettuce.args.geo :refer [->unit]])
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 
     ScanCursor ScriptOutputType
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
-    ZStoreArgs ZAddArgs ScoredValue)
+    ZStoreArgs ZAddArgs ScoredValue
+    GeoArgs GeoRadiusStoreArgs GeoWithin GeoCoordinates)
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterCommands
@@ -500,4 +502,66 @@
   (mpfcount [this keys]
     (.pfcount this ^objects (into-array Object keys)))
 
-  )
+  GeoCommands
+  (geoadd
+    ([this key ^Double long ^Double lat member]
+     (.geoadd this key long lat member))
+    ([this key lng-lat-members]
+     (.geoadd this key ^objects (into-array Object (mapcat identity lng-lat-members)))))
+  (geohash [this key member]
+    (first (.geohash this key ^objects (into-array Object [member]))))
+  (mgeohash [this key members]
+    (into [] (.geohash this key ^objects (into-array Object members))))
+  (georadius
+    ([this key ^Double long ^Double lat ^Double dist unit]
+     (into #{} (.georadius this key long lat dist (->unit unit))))
+    ([this key ^Double long ^Double lat ^Double dist unit args]
+     (condp instance? args
+       GeoArgs
+       (->> (.georadius this key long lat dist (->unit unit) ^GeoArgs args)
+            (map (fn [^GeoWithin g]
+                   (if-not g
+                     nil
+                     {:member (.member g)
+                      :distance (.distance g)
+                      :geohash (.geohash g)
+                      :coordinates {:x (.x ^GeoCoordinates (.coordinates g))
+                                    :y (.y ^GeoCoordinates (.coordinates g))}})))
+            (into []))
+       GeoRadiusStoreArgs
+       (.georadius this key long lat dist (->unit unit) ^GeoRadiusStoreArgs args)
+       (throw (ex-info "Invalid Args" {:args (class args) 
+                                       :valids #{GeoArgs GeoRadiusStoreArgs}})))))
+  (georadiusbymember
+    ([this key member ^Double dist unit]
+     (into #{} (.georadiusbymember this key member dist (->unit unit))))
+    ([this key member ^Double dist unit args]
+     (condp instance? args
+       GeoArgs
+       (->> (.georadiusbymember this key member dist (->unit unit) ^GeoArgs args)
+            (map (fn [^GeoWithin g]
+                   (if-not g
+                     nil
+                     {:member (.member g)
+                      :distance (.distance g)
+                      :geohash (.geohash g)
+                      :coordinates {:x (.x ^GeoCoordinates (.coordinates g))
+                                    :y (.y ^GeoCoordinates (.coordinates g))}})))
+            (into []))
+       GeoRadiusStoreArgs
+       (.georadiusbymember this key member dist (->unit unit) ^GeoRadiusStoreArgs args)
+       (throw (ex-info "Invalid Args" {:args (class args) 
+                                       :valids #{GeoArgs GeoRadiusStoreArgs}})))))
+  (geopos [this key member]
+    (->> (.geopos this key ^objects (into-array Object [member]))
+         (map (fn [^GeoCoordinates c]
+                (if-not c nil {:x (.x c) :y (.y c)})))
+         (first)))
+  (mgeopos [this key members]
+    (->> (.geopos this key ^objects (into-array Object members))
+         (map (fn [^GeoCoordinates c]
+                (if-not c nil {:x (.x c) :y (.y c)})))
+         (into [])))
+  (geodist [this key from to unit]
+    (.geodist this key from to (->unit unit))))
+

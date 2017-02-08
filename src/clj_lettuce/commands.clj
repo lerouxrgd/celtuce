@@ -8,7 +8,8 @@
    [clj-lettuce.args.bitfield]
    [clj-lettuce.args.set]
    [clj-lettuce.args.zset]
-   [clj-lettuce.args.kill]))
+   [clj-lettuce.args.kill]
+   [clj-lettuce.args.geo]))
 
 (import-vars [clj-lettuce.args.scan     scan-cursor scan-args scan-res scan-seq])
 (import-vars [clj-lettuce.args.migrate  migrate-args])
@@ -17,6 +18,7 @@
 (import-vars [clj-lettuce.args.set      set-args])
 (import-vars [clj-lettuce.args.zset     zstore-args])
 (import-vars [clj-lettuce.args.kill     kill-args])
+(import-vars [clj-lettuce.args.geo      geo-args georadius-store-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -411,4 +413,25 @@
             "Return the approximated cardinality of the set (HyperLogLog) at key")
   (mpfcount [this keys]
             "Return the approximated cardinality of the sets (HyperLogLog) at keys"))
+
+(defprotocol GeoCommands
+  "Redis Geo Commands"
+  (geoadd            [this key long lat member] [this key lng-lat-members]
+                     "Single or multiple geo add")
+  (geohash           [this key member]
+                     "Retrieve Geohash of a member of a geospatial index")
+  (mgeohash          [this key members]
+                     "Retrieve Geohash of multiple members of a geospatial index")
+  (georadius         [this key long lat dist unit] [this key long lat dist unit args]
+                     "Retrieve members selected by dist with the center of long last,
+                      Perform a georadius query and store the results in a zset")
+  (georadiusbymember [this key member dist unit] [this key member dist unit args]
+                     "Retrieve members selected by dist with the center of member,
+                      Perform a georadiusbymember query and store the results in a zset")
+  (geopos            [this key member]
+                     "Get geo coordinates for the member")
+  (mgeopos           [this key members]
+                     "Get geo coordinates for the members")
+  (geodist           [this key from to unit]
+                     "Retrieve distance between points from and to"))
 

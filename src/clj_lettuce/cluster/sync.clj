@@ -522,11 +522,13 @@
             (map (fn [^GeoWithin g]
                    (if-not g
                      nil
-                     {:member (.member g)
-                      :distance (.distance g)
-                      :geohash (.geohash g)
-                      :coordinates {:x (.x ^GeoCoordinates (.coordinates g))
-                                    :y (.y ^GeoCoordinates (.coordinates g))}})))
+                     (cond-> {:member (.member g)}
+                       (.distance g) (assoc :distance (.distance g))
+                       (.geohash g) (assoc :geohash (.geohash g))
+                       (.coordinates g)
+                       (assoc :coordinates
+                              {:x (.x ^GeoCoordinates (.coordinates g))
+                               :y (.y ^GeoCoordinates (.coordinates g))})))))
             (into []))
        GeoRadiusStoreArgs
        (.georadius this key long lat dist (->unit unit) ^GeoRadiusStoreArgs args)
@@ -542,11 +544,13 @@
             (map (fn [^GeoWithin g]
                    (if-not g
                      nil
-                     {:member (.member g)
-                      :distance (.distance g)
-                      :geohash (.geohash g)
-                      :coordinates {:x (.x ^GeoCoordinates (.coordinates g))
-                                    :y (.y ^GeoCoordinates (.coordinates g))}})))
+                     (cond-> {:member (.member g)}
+                       (.distance g) (assoc :distance (.distance g))
+                       (.geohash g) (assoc :geohash (.geohash g))
+                       (.coordinates g)
+                       (assoc :coordinates
+                              {:x (.x ^GeoCoordinates (.coordinates g))
+                               :y (.y ^GeoCoordinates (.coordinates g))})))))
             (into []))
        GeoRadiusStoreArgs
        (.georadiusbymember this key member dist (->unit unit) ^GeoRadiusStoreArgs args)

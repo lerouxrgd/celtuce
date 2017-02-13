@@ -289,7 +289,7 @@
 
 (deftest hll-commands-test
   (let [err 0.81
-        close? (fn [x y] (< (- x (* x err)) y (+ x (* x err))))]
+        close? (fn [x y] (<= (- x (* x err)) y (+ x (* x err))))]
     (testing "basic hll usage"
       (is (= 1 (redis/pfadd  *cmds* "pf1" 0)))
       (is (= 1 (redis/mpfadd *cmds* "pf1" (range 1 1000))))
@@ -298,4 +298,59 @@
       (is (close? 1000 (redis/pfcount  *cmds* "pf1")))
       (is (= 1 (redis/mpfadd *cmds* "pf1" (range 1000 2000))))
       (is (close? 2000 (redis/pfcount  *cmds* "pf1"))))))
+
+(deftest geo-commands-test
+  (let [err 0.999999
+        close? (fn [x y] (<= (- x (* x err)) y (+ x (* x err))))]
+
+    (testing "basic geo usage"
+      (is (= 1 (redis/geoadd *cmds* "Sicily" 13.361389 38.115556 "Palermo")))
+      (is (= 2 (redis/geoadd *cmds* "Sicily" [[15.087269 37.502669 "Catania"]
+                                              [13.583333 37.316667 "Agrigento"]])))
+      (is (= (redis/geohash  *cmds* "Sicily" "Agrigento") "sq9sm1716e0"))
+      (is (= (redis/mgeohash *cmds* "Sicily" ["Palermo" "Catania"])
+             ["sqc8b49rny0" "sqdtr74hyu0"])))
+
+    (testing "georadius, by coord and by member"
+      (is (= (redis/georadius *cmds* "Sicily" 15 37 200 :km)
+             #{"Agrigento" "Catania" "Palermo"}))
+      (let [[palermo agrigento]
+            (redis/georadius *cmds* "Sicily" 15 37 200 :km
+                             (redis/geo-args :with-dist true :with-coord true
+                                             :count 2 :sort :desc))]
+        (is (= "Palermo"      (-> palermo :member)))
+        (is (close? 190.4424  (-> palermo :distance)))
+        (is (close? 13.361389 (-> palermo :coordinates :x)))
+        (is (close? 38.115556 (-> palermo :coordinates :y)))
+        (is (= "Agrigento"    (-> agrigento :member)))
+        (is (close? 130.4235  (-> agrigento :distance)))
+        (is (close? 13.583333 (-> agrigento :coordinates :x)))
+        (is (close? 37.316667 (-> agrigento :coordinates :y))))
+      (is (= (redis/georadiusbymember *cmds* "Sicily" "Agrigento" 100 :km)
+             #{"Agrigento" "Palermo"}))
+      (let [[agrigento palermo]
+            (redis/georadiusbymember *cmds* "Sicily" "Agrigento" 100 :km
+                                     (redis/geo-args :with-dist true :with-coord true))]
+        (is (= "Agrigento"    (-> agrigento :member)))
+        (is (close? 0.0000    (-> agrigento :distance)))
+        (is (close? 13.583333 (-> agrigento :coordinates :x)))
+        (is (close? 37.316667 (-> agrigento :coordinates :y)))
+        (is (= "Palermo"      (-> palermo :member)))
+        (is (close? 90.9778   (-> palermo :distance)))
+        (is (close? 13.361389 (-> palermo :coordinates :x)))
+        (is (close? 38.115556 (-> palermo :coordinates :y)))))
+
+    (testing "position and distance"
+      (let [palermo (redis/geopos *cmds* "Sicily" "Palermo")]
+        (is (close? 13.361389 (-> palermo :x)))
+        (is (close? 38.115556 (-> palermo :y))))
+      (let [[catania agrigento dont-exist]
+            (redis/mgeopos *cmds* "Sicily" ["Catania" "Agrigento" "DontExist"])]
+        (is (close? 15.087269 (-> catania :x)))
+        (is (close? 37.502669(-> catania :y)))
+        (is (close? 13.583333 (-> agrigento :x)))
+        (is (close? 37.316667 (-> agrigento :y)))
+        (is (nil? dont-exist)))
+      (is (close? 166.2742 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :km)))
+      (is (close? 103.3182 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :mi))))))
 

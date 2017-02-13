@@ -1,10 +1,10 @@
 # clj-lettuce
 
-Clojure wrapper around the Java Redis client [Lettuce](https://github.com/mp911de/lettuce).
+An idiomatic Clojure Redis client wrapping the Java client [Lettuce](https://github.com/mp911de/lettuce).
 
 ## Usage
 
-FIXME
+Work in progress.
 
 ## License
 

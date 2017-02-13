@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.geo
+(ns celtuce.args.geo
   (:import 
    (com.lambdaworks.redis
     GeoArgs GeoArgs$Unit GeoArgs$Sort GeoRadiusStoreArgs)))

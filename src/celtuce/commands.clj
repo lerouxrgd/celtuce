@@ -1,24 +1,24 @@
-(ns clj-lettuce.commands
+(ns celtuce.commands
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [potemkin :refer [import-vars]]
-   [clj-lettuce.args.scan]
-   [clj-lettuce.args.migrate]
-   [clj-lettuce.args.sort]
-   [clj-lettuce.args.bitfield]
-   [clj-lettuce.args.set]
-   [clj-lettuce.args.zset]
-   [clj-lettuce.args.kill]
-   [clj-lettuce.args.geo]))
+   [celtuce.args.scan]
+   [celtuce.args.migrate]
+   [celtuce.args.sort]
+   [celtuce.args.bitfield]
+   [celtuce.args.set]
+   [celtuce.args.zset]
+   [celtuce.args.kill]
+   [celtuce.args.geo]))
 
-(import-vars [clj-lettuce.args.scan     scan-cursor scan-args scan-res scan-seq])
-(import-vars [clj-lettuce.args.migrate  migrate-args])
-(import-vars [clj-lettuce.args.sort     sort-args])
-(import-vars [clj-lettuce.args.bitfield bitfield-args])
-(import-vars [clj-lettuce.args.set      set-args])
-(import-vars [clj-lettuce.args.zset     zstore-args])
-(import-vars [clj-lettuce.args.kill     kill-args])
-(import-vars [clj-lettuce.args.geo      geo-args georadius-store-args])
+(import-vars [celtuce.args.scan     scan-cursor scan-args scan-res scan-seq])
+(import-vars [celtuce.args.migrate  migrate-args])
+(import-vars [celtuce.args.sort     sort-args])
+(import-vars [celtuce.args.bitfield bitfield-args])
+(import-vars [celtuce.args.set      set-args])
+(import-vars [celtuce.args.zset     zstore-args])
+(import-vars [celtuce.args.kill     kill-args])
+(import-vars [celtuce.args.geo      geo-args georadius-store-args])
 
 (defprotocol HashCommands
   "Redis Hash Commands"

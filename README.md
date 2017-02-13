@@ -1,4 +1,4 @@
-# clj-lettuce
+# celtuce
 
 An idiomatic Clojure Redis client wrapping the Java client [Lettuce](https://github.com/mp911de/lettuce).
 

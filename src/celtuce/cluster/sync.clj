@@ -1,10 +1,10 @@
-(ns clj-lettuce.cluster.sync
+(ns celtuce.cluster.sync
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
-   [clj-lettuce.commands :refer :all]
-   [clj-lettuce.args.zset :refer [zadd-args]]
-   [clj-lettuce.args.scripting :refer [output-type]]
-   [clj-lettuce.args.geo :refer [->unit]])
+   [celtuce.commands :refer :all]
+   [celtuce.args.zset :refer [zadd-args]]
+   [celtuce.args.scripting :refer [output-type]]
+   [celtuce.args.geo :refer [->unit]])
   (:import 
    (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
    (com.lambdaworks.redis 

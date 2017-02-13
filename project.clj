@@ -1,6 +1,6 @@
-(defproject clj-lettuce "0.1.0-SNAPSHOT"
-  :description "Clojure wrapper around the Java Redis client Lettuce"
-  :url "https://github.com/lerouxrgd/clj-lettuce"
+(defproject celtuce "0.1.0-SNAPSHOT"
+  :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
+  :url "https://github.com/lerouxrgd/celtuce"
   :license {:name "Apache License 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :global-vars {*warn-on-reflection* true}

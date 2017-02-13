@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.zset
+(ns celtuce.args.zset
   (:import 
    (com.lambdaworks.redis ZAddArgs ZAddArgs$Builder ZStoreArgs)))
 

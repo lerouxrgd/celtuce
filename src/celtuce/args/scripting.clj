@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.scripting
+(ns celtuce.args.scripting
   (:import 
    (com.lambdaworks.redis ScriptOutputType)))
 

@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.sort
+(ns celtuce.args.sort
   (:import
    (com.lambdaworks.redis SortArgs)))
 

@@ -1,6 +1,6 @@
-(ns clj-lettuce.connector
+(ns celtuce.connector
   (:require 
-   [clj-lettuce.codec :refer [nippy-codec]])
+   [celtuce.codec :refer [nippy-codec]])
   (:import 
    (java.util.concurrent TimeUnit)
    (com.lambdaworks.redis.codec RedisCodec)
@@ -23,10 +23,10 @@
     [^RedisClusterClient redis-cli ^StatefulRedisClusterConnection stateful-conn]
   RedisConnector
   (commands-sync [this]
-    (require '[clj-lettuce.cluster.sync])
+    (require '[celtuce.cluster.sync])
     (.sync stateful-conn))
   (commands-async [this]
-    (require '[clj-lettuce.cluster.async])
+    (require '[celtuce.cluster.async])
     (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn ))

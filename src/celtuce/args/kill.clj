@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.kill
+(ns celtuce.args.kill
   (:import 
    (com.lambdaworks.redis KillArgs KillArgs$Builder)))
 

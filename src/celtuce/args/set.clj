@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.set
+(ns celtuce.args.set
   (:import 
    (com.lambdaworks.redis SetArgs)))
 

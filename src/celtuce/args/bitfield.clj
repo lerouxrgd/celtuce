@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.bitfield
+(ns celtuce.args.bitfield
   (:import 
    (com.lambdaworks.redis BitFieldArgs BitFieldArgs$OverflowType)))
 

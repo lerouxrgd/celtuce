@@ -1,14 +1,14 @@
-(ns clj-lettuce.cluster-test
+(ns celtuce.cluster-test
   (:require 
    [clojure.test :refer :all]
-   [clj-lettuce.commands :as redis]
-   [clj-lettuce.connector :as conn]))
+   [celtuce.commands :as redis]
+   [celtuce.connector :as conn]))
 
 (def ^:dynamic *cmds*)
 
 (defmacro with-str-cmds [& body]
   `(let [rclust# (conn/redis-cluster "redis://localhost:30001"
-                                     :codec (clj-lettuce.codec/utf8-string-codec))]
+                                     :codec (celtuce.codec/utf8-string-codec))]
      (binding [*cmds* (conn/commands-sync rclust#)]
        (try ~@body
             (finally (conn/shutdown rclust#))))))
@@ -61,7 +61,7 @@
     (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
     (let [cur (redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           res (redis/scan-res cur)]
-      (is (= false (clj-lettuce.args.scan/finished? cur)))
+      (is (= false (celtuce.args.scan/finished? cur)))
       (is (= true (map? res)))
       (is (<= 5 (count res) 15))) ;; about 10
     (let [els (->> (redis/scan-args :limit 50)
@@ -74,7 +74,7 @@
     (redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
     (let [cur (redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           res (redis/scan-res cur)]
-      (is (= true (clj-lettuce.args.scan/finished? cur)))
+      (is (= true (celtuce.args.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              res)))
     (is (thrown? Exception

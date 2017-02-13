@@ -1,4 +1,4 @@
-(ns clj-lettuce.args.migrate
+(ns celtuce.args.migrate
   (:import 
    (com.lambdaworks.redis MigrateArgs)))
 

@@ -16,6 +16,12 @@
   (shutdown [this]))
 
 ;;
+;; Redis Server
+;;
+
+
+
+;;
 ;; Redis Cluster
 ;;
 
@@ -23,10 +29,10 @@
     [^RedisClusterClient redis-cli ^StatefulRedisClusterConnection stateful-conn]
   RedisConnector
   (commands-sync [this]
-    (require '[celtuce.cluster.sync])
+    (require '[celtuce.impl.cluster.sync])
     (.sync stateful-conn))
   (commands-async [this]
-    (require '[celtuce.cluster.async])
+    (require '[celtuce.impl.cluster.async])
     (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn ))

@@ -1,4 +1,4 @@
-(ns celtuce.cluster-test
+(ns celtuce.cluster-sync-test
   (:require 
    [clojure.test :refer :all]
    [celtuce.commands :as redis]

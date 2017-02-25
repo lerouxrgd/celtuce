@@ -1,9 +1,12 @@
 (ns celtuce.args.scan
+  (:require
+   [manifold.deferred :as d])
   (:import 
    (com.lambdaworks.redis 
     ScanArgs ScanCursor
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
-    ScoredValue)))
+    ScoredValue)
+   (manifold.deferred Deferred)))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
@@ -36,7 +39,10 @@
   (scan-res [this] 
     (->> (.getValues this)
          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
-         (into []))))
+         (into [])))
+  Deferred
+  (scan-res [this]
+    (scan-res @this)))
 
 (defn ^ScanCursor scan-cursor 
   ([]
@@ -46,10 +52,11 @@
      (.setCursor cursor))))
 
 (defn scan-seq* [scan-fn cursor args]
-  (when-not (finished? cursor)
-    (let [cursor-res (if args (scan-fn cursor args) (scan-fn cursor))]
-      (lazy-seq (cons (scan-res cursor-res)
-                      (scan-seq* scan-fn cursor-res args))))))
+  (let [cursor (if (instance? Deferred cursor) @cursor cursor)]
+    (when-not (finished? cursor)
+      (let [cursor-res (if args (scan-fn cursor args) (scan-fn cursor))]
+        (lazy-seq (cons (scan-res cursor-res)
+                        (scan-seq* scan-fn cursor-res args)))))))
 
 (defmacro scan-seq 
   "Takes a scan EXPR composed of:

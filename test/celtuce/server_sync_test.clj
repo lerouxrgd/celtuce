@@ -4,17 +4,32 @@
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]))
 
+(def redis-url "redis://localhost:6379")
 (def ^:dynamic *cmds*)
 
 (defmacro with-str-cmds [& body]
-  `(let [rserv# (conn/redis-server "redis://localhost:6379"
+  `(let [rserv# (conn/redis-server redis-url
                                    :codec (celtuce.codec/utf8-string-codec))]
      (binding [*cmds* (conn/commands-sync rserv#)]
        (try ~@body
             (finally (conn/shutdown rserv#))))))
 
+(defmacro with-pubsub-cmds 
+  "Binds local @pub and @sub with different connections, 
+  registers the given listener on @sub"
+  [listener & body]
+  `(let [rserv-pub# (conn/->pubsub (conn/redis-server redis-url))
+         rserv-sub# (conn/->pubsub (conn/redis-server redis-url))]
+     (conn/add-listener! rserv-sub# ~listener)
+     (with-local-vars
+       [~'pub (conn/commands-sync rserv-pub#)
+        ~'sub (conn/commands-sync rserv-sub#)]
+       (try ~@body
+            (finally (conn/shutdown rserv-pub#)
+                     (conn/shutdown rserv-sub#))))))
+
 (defn cmds-fixture [test-function]
-  (let [rserv (conn/redis-server "redis://localhost:6379")]
+  (let [rserv (conn/redis-server redis-url)]
     (binding [*cmds* (conn/commands-sync rserv)]
       (try (test-function)
            (finally (conn/shutdown rserv))))))
@@ -353,4 +368,32 @@
         (is (nil? dont-exist)))
       (is (close? 166.2742 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :km)))
       (is (close? 103.3182 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :mi))))))
+
+(deftest pubsub-commands-test
+  (testing "simple pub/sub mechanism"
+    (let [nb-sub (atom 0)
+          subscribed? (promise)
+          res (promise)
+          unsubscribed? (promise)]
+      (with-pubsub-cmds
+        (reify redis/PubSubListener
+          (message [_ channel message]
+            (deliver res [channel message]))
+          (message [_ pattern channel message])
+          (subscribed [_ channel count]
+            (swap! nb-sub inc)
+            (deliver subscribed? true))
+          (unsubscribed [_ channel count]
+            (swap! nb-sub dec)
+            (deliver unsubscribed? true))
+          (psubscribed [_ pattern count])
+          (punsubscribed [_ pattern count]))
+        (redis/subscribe @sub "c")
+        (is (= true @subscribed?))
+        (is (= 1 @nb-sub))
+        (redis/publish @pub "c" "message")
+        (is (= ["c" "message"] @res))
+        (redis/unsubscribe @sub "c")
+        (is (= true @unsubscribed?))
+        (is (= 0 @nb-sub)) ))))
 

@@ -4,10 +4,11 @@
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]))
 
+(def redis-url "redis://localhost:30001")
 (def ^:dynamic *cmds*)
 
 (defmacro with-str-cmds [& body]
-  `(let [rclust# (conn/redis-cluster "redis://localhost:30001"
+  `(let [rclust# (conn/redis-cluster redis-url
                                      :codec (celtuce.codec/utf8-string-codec))]
      (binding [*cmds* (conn/commands-sync rclust#)]
        (try ~@body
@@ -17,8 +18,8 @@
   "Binds local @pub and @sub with different connections, 
   registers the given listener on @sub"
   [listener & body]
-  `(let [rclust-pub# (conn/->pubsub (conn/redis-cluster "redis://localhost:30001"))
-         rclust-sub# (conn/->pubsub (conn/redis-cluster "redis://localhost:30001"))]
+  `(let [rclust-pub# (conn/->pubsub (conn/redis-cluster redis-url))
+         rclust-sub# (conn/->pubsub (conn/redis-cluster redis-url))]
      (conn/add-listener! rclust-sub# ~listener)
      (with-local-vars
        [~'pub (conn/commands-sync rclust-pub#)
@@ -28,7 +29,7 @@
                      (conn/shutdown rclust-sub#))))))
 
 (defn cmds-fixture [test-function]
-  (let [rclust (conn/redis-cluster "redis://localhost:30001")]
+  (let [rclust (conn/redis-cluster redis-url)]
     (binding [*cmds* (conn/commands-sync rclust)]
       (try (test-function)
            (finally (conn/shutdown rclust))))))

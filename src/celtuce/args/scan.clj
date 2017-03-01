@@ -17,13 +17,13 @@
   (get-cursor [this] "Get the String cursor id")
   (finished?  [this] "True if the scan operation of this cursor is finished"))
 
-(defprotocol PScanResult
-  (scan-res [this] "Get the data contained in a scan cursor result"))
-
 (extend-type ScanCursor
   PScanCursor
   (get-cursor [this] (.getCursor  this))
   (finished?  [this] (.isFinished this)))
+
+(defprotocol PScanResult
+  (scan-res [this] "Get the data contained in a scan cursor result"))
 
 (extend-protocol PScanResult
   MapScanCursor

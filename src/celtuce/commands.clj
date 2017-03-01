@@ -435,3 +435,43 @@
   (geodist           [this key from to unit]
                      "Retrieve distance between points from and to"))
 
+(defprotocol PubSubCommands
+  "Redis PubSub Commands"
+  (publish         [this channel message]
+                   "Post a message to a channel")
+  (subscribe       [this channel]
+                   "Listen for messages published to channel")
+  (unsubscribe     [this channel]
+                   "Stop listening for messages posted to channel")
+  (msubscribe      [this channels]
+                   "Listen for messages published to channels")
+  (munsubscribe    [this channels]
+                   "Stop listening for messages posted to channels")
+  (psubscribe      [this pattern]
+                   "Listen for messages published to channels matching pattern")
+  (punsubscribe    [this pattern]
+                   "Stop listening for messages posted to channels matching pattern")
+  (mpsubscribe     [this pattern]
+                   "Listen for messages published to channels matching patterns")
+  (mpunsubscribe   [this pattern]
+                   "Stop listening for messages posted to channels matching patterns")
+  (pubsub-channels [this] [this channel]
+                   "Lists the currently *active channels*")
+  (pubsub-numsub   [this channel]
+                   "Returns the number of subscribers for the specified channel")
+  (pubsub-numpat   [this]
+                   "Returns the number of subscriptions to patterns"))
+
+(defprotocol PubSubListener
+  "Protocol for redis pub/sub listeners"
+  (message       [this channel message] [this pattern channel message]
+                 "Message received from a channel (or pattern) subscription")
+  (subscribed    [this channel count]
+                 "Subscribed to a channel")
+  (unsubscribed  [this channel count]
+                 "Unsubscribed from a channel")
+  (psubscribed   [this pattern count]
+                 "Subscribed to a pattern")
+  (punsubscribed [this pattern count]
+                 "Unsubscribed from a pattern"))
+

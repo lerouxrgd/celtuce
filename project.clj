@@ -1,4 +1,4 @@
-(defproject celtuce "0.1.0-SNAPSHOT"
+(defproject celtuce "0.1.0"
   :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
   :url "https://github.com/lerouxrgd/celtuce"
   :license {:name "Apache License 2.0"

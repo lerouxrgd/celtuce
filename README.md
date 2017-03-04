@@ -20,7 +20,7 @@ Connectors are available for both Redis `Server` and `Cluster`.
 
 Redis URI synthax details can be found in [Lettuce Wiki][wiki-uri].
 
-Serialization defaults to [Nippy][], but other serilizers are available in `celtuce.codec`.
+Serialization defaults to [Nippy][], but other serializers are available in `celtuce.codec`.
 Especially [Lettuce][] original `String` serializer can be used as follows:
 
 ```clj
@@ -37,7 +37,7 @@ Other connectors options:
 
 ### Redis Commands
 
-All Redis commands are implemented using protocols in `cletuce.commands`.
+All Redis commands are implemented using protocols in `celtuce.commands`.
 
 ```clj
 (require '[celtuce.commands :as redis])

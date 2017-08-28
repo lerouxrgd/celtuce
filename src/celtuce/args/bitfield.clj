@@ -1,8 +1,11 @@
 (ns celtuce.args.bitfield
   (:import 
-   (com.lambdaworks.redis BitFieldArgs BitFieldArgs$OverflowType)))
+   (com.lambdaworks.redis
+    BitFieldArgs
+    BitFieldArgs$BitFieldType
+    BitFieldArgs$OverflowType)))
 
-(defn bft 
+(defn ^BitFieldArgs$BitFieldType bft 
   "Constructs a BitFieldType from a keyword"
   [bft-kw]
   (if-let [[_ sign bits] (re-find #"(^[us])(\d+)$" ((fnil name "") bft-kw))]
@@ -35,19 +38,19 @@
           (recur args tail)))
       :get
       (let [[bft-kw offset & tail] tail]
-        (.get args (bft bft-kw) offset)
+        (.get args (bft bft-kw) ^int offset)
         (if (nil? tail)
           args
           (recur args tail)))
       :set
       (let [[bft-kw offset value & tail] tail]
-        (.set args (bft bft-kw) offset value)
+        (.set args (bft bft-kw) ^int offset ^long value)
         (if (nil? tail)
           args
           (recur args tail)))
       :incrby
       (let [[bft-kw offset amount & tail] tail]
-        (.incrBy args (bft bft-kw) offset amount)
+        (.incrBy args (bft bft-kw) ^int offset ^long amount)
         (if (nil? tail)
           args
           (recur args tail))))))

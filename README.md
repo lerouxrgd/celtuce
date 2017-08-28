@@ -117,7 +117,7 @@ lein test
 
 ## License
 
-* [Apache License 2.0] (http://www.apache.org/licenses/LICENSE-2.0)
+* [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 * Wrapper of https://github.com/mp911de/lettuce
 
 [lettuce]: https://github.com/mp911de/lettuce

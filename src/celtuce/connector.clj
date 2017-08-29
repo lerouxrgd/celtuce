@@ -136,11 +136,9 @@
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
      :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
     :or {codec (nippy-codec) cli-opts {}}}]
-  (let [^RedisClient redis-cli
-        (RedisClient/create redis-uri)
+  (let [redis-cli (RedisClient/create redis-uri)
         _ (.setOptions redis-cli (client-options cli-opts))
-        ^StatefulRedisConnection stateful-conn 
-        (.connect redis-cli ^RedisCodec codec)]
+        stateful-conn (.connect redis-cli ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
       (.setTimeout stateful-conn conn-timeout conn-unit))
     (.setAutoFlushCommands stateful-conn auto-flush)

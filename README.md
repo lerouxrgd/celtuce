@@ -120,7 +120,7 @@ lein test
 * [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 * Wrapper of https://github.com/mp911de/lettuce
 
-[lettuce]: https://github.com/mp911de/lettuce
-[wiki-uri]: https://github.com/mp911de/lettuce/wiki/Redis-URI-and-connection-details#uri-syntax
+[lettuce]: https://github.com/lettuce-io/lettuce-core
+[wiki-uri]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-URI-and-connection-details#uri-syntax
 [nippy]: https://github.com/ptaoussanis/nippy
 [manifold]: https://github.com/ztellman/manifold

@@ -24,11 +24,12 @@
   (reset          [this])
   (shutdown       [this]))
 
-(defn- ^SocketOptions socket-options
+(defn ^SocketOptions socket-options
   "Internal helper to build SocketOptions, used by client-options"
   [opts]
   (cond-> (SocketOptions/builder)
-    (and (contains? opts :timeout) (contains? opts :unit))
+    (and (contains? opts :timeout)
+         (contains? opts :unit))
     (.connectTimeout (:timeout opts) (:unit opts))
     (contains? opts :keep-alive)
     (.keepAlive (:keep-alive opts))
@@ -36,7 +37,7 @@
     (.tcpNoDelay (:tcp-no-delay opts))
     true (.build)))
 
-(defn- ^SslOptions ssl-options
+(defn ^SslOptions ssl-options
   "Internal helper to build SslOptions, used by client-options"
   [opts]
   (cond-> (SslOptions/builder)
@@ -46,8 +47,7 @@
       (= :open-ssl (:provider opts)) (.openSslProvider)
       (= :jdk      (:provider opts)) (.jdkSslProvider))
     ;; keystore setup
-    #_(contains? opts :keystore)
-    #_
+    (contains? opts :keystore)
     (cond->
       (and (contains? (:keystore opts) :file)
            (contains? (:keystore opts) :password)) 
@@ -123,8 +123,6 @@
     (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
-  (set-options [this options]
-    (.setOptions redis-cli ^ClientOptions options))
   (reset [this] 
     (.reset stateful-conn))
   (shutdown [this]
@@ -133,16 +131,18 @@
 
 (defn redis-server
   [^String redis-uri & 
-   {timeout :timeout unit :unit codec :codec auto-flush :auto-flush
-    :or {unit       TimeUnit/MILLISECONDS 
-         codec      (nippy-codec) 
-         auto-flush true}}]
+   {codec :codec
+    cli-opts :client-options
+    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
+     :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
+    :or {codec (nippy-codec) cli-opts {}}}]
   (let [^RedisClient redis-cli
         (RedisClient/create redis-uri)
+        _ (.setOptions redis-cli (client-options cli-opts))
         ^StatefulRedisConnection stateful-conn 
         (.connect redis-cli ^RedisCodec codec)]
-    (when (and timeout unit)
-      (.setTimeout stateful-conn timeout unit))
+    (when (and conn-timeout conn-unit)
+      (.setTimeout stateful-conn conn-timeout conn-unit))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (->RedisServer redis-cli stateful-conn codec)))
 
@@ -163,8 +163,6 @@
     (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
-  (set-options [this options]
-    (.setOptions redis-cli ^ClientOptions options))
   (reset [this] 
     (.reset stateful-conn))
   (shutdown [this]
@@ -172,15 +170,17 @@
     (.shutdown redis-cli)))
 
 (defn redis-cluster
-  [^String redis-uri & 
-   {timeout :timeout unit :unit codec :codec auto-flush :auto-flush
-    :or {unit       TimeUnit/MILLISECONDS 
-         codec      (nippy-codec) 
-         auto-flush true}}]
+  [^String redis-uri &
+   {codec :codec
+    cli-opts :client-options
+    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
+     :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
+    :or {codec (nippy-codec) cli-opts {}}}]
   (let [redis-cli (RedisClusterClient/create redis-uri)
+        ;; TODO call .setOptions on redis-cli
         stateful-conn (.connect redis-cli codec)]
-    (when (and timeout unit)
-      (.setTimeout stateful-conn timeout unit))
+    (when (and conn-timeout conn-unit)
+      (.setTimeout stateful-conn conn-timeout conn-unit))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (->RedisCluster redis-cli stateful-conn codec)))
 

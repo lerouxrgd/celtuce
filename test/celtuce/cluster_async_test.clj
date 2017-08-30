@@ -51,7 +51,8 @@
     (is (= nil   @(redis/hget    *cmds* "h" :dont-exist)))
     (is (= false @(redis/hsetnx  *cmds* "h" :a :a)))
     (is (= "bar" @(redis/hget    *cmds* "h" :foo)))
-    (is (= ["bar" 1 nil :b nil] @(redis/hmget *cmds* "h" [:foo :a 0 "b" :dont-exist])))
+    (is (= ["bar" 1 nil :b nil]
+           @(redis/hmget *cmds* "h" [:foo :a 0 "b" :dont-exist])))
     (is (= {:foo "bar" :a 1 0 nil "b" :b} @(redis/hgetall *cmds* "h")))
     (is (= #{:foo :a 0 "b"} 
            (into #{} @(redis/hkeys *cmds* "h"))))
@@ -74,26 +75,30 @@
   
   (testing "hscan cursors"
     @(redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
-    (let [cur @(redis/hscan *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
+    (let [cur @(redis/hscan
+                *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           res (redis/scan-res cur)]
       (is (= false (celtuce.args.scan/finished? cur)))
       (is (= true (map? res)))
       (is (<= 5 (count res) 15))) ;; about 10
     (let [els (->> (redis/scan-args :limit 50)
                    (redis/hscan *cmds* "hl" (redis/scan-cursor))
-                   (redis/scan-seq) 
+                   (redis/chunked-scan-seq) 
                    (take 100))]
       (is (<= 95 (count els) 105)) ;; about 100
       (is (= @(redis/hgetall *cmds* "hl")
              (apply merge els))))
-    @(redis/hmset *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
-    (let [cur @(redis/hscan *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
+    @(redis/hmset
+      *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
+    (let [cur @(redis/hscan
+                *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           res (redis/scan-res cur)]
       (is (= true (celtuce.args.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              res)))
     (is (thrown? Exception
-                 (redis/scan-seq (redis/hscan *cmds* nil (redis/scan-cursor)))))))
+                 (redis/chunked-scan-seq
+                  (redis/hscan *cmds* nil (redis/scan-cursor)))))))
 
 (deftest key-commands-test
   
@@ -102,7 +107,7 @@
     (is (= 1 @(redis/exists   *cmds* "h")))
     (is (= 1 @(redis/mexists  *cmds* ["h" :dont-exist])))
     (is (= ["h"] @(redis/keys *cmds* "h")))
-    (is (= ["h"] (->> (redis/scan-seq (redis/scan *cmds*)) 
+    (is (= ["h"] (->> (redis/chunked-scan-seq (redis/scan *cmds*)) 
                       (apply concat)
                       (into []))))
     (is (= "hash" @(redis/type *cmds* "h"))))
@@ -181,7 +186,8 @@
       (is (= 2 @(redis/bitpos *cmds* "b" false 0 0)))))
 
   (testing "bitfield command"
-    (let [args (redis/bitfield-args :incrby :u2 100 1 :overflow :sat :incrby :u2 102 1)]
+    (let [args (redis/bitfield-args
+                :incrby :u2 100 1 :overflow :sat :incrby :u2 102 1)]
       (is (= [1 1] @(redis/bitfield *cmds* "bf" args)))
       (is (= [2 2] @(redis/bitfield *cmds* "bf" args)))
       (is (= [3 3] @(redis/bitfield *cmds* "bf" args)))
@@ -220,7 +226,7 @@
            @(redis/smembers *cmds* "s1")))
     (is (= #{:a :b :c :d :e}
            (->> (redis/sscan *cmds* "s1" (redis/scan-cursor))
-                (redis/scan-seq) 
+                (redis/chunked-scan-seq) 
                 (take 5)
                 (apply into #{})))))
 
@@ -269,7 +275,7 @@
            @(redis/zrevrangebyscore-withscores *cmds* "z1" 0.5 0.3)))
     (is (= #{[0.1 :a] [0.2 :b] [0.3 :c] [0.4 :d] [0.5 :e]}
            (->> (redis/zscan *cmds* "z1" (redis/scan-cursor))
-                (redis/scan-seq)
+                (redis/chunked-scan-seq)
                 (take 5)
                 (apply into #{})))))
 
@@ -344,8 +350,9 @@
       (is (= @(redis/georadiusbymember *cmds* "Sicily" "Agrigento" 100 :km)
              #{"Agrigento" "Palermo"}))
       (let [[agrigento palermo]
-            @(redis/georadiusbymember *cmds* "Sicily" "Agrigento" 100 :km
-                                      (redis/geo-args :with-dist true :with-coord true))]
+            @(redis/georadiusbymember
+              *cmds* "Sicily" "Agrigento" 100 :km
+              (redis/geo-args :with-dist true :with-coord true))]
         (is (= "Agrigento"    (-> agrigento :member)))
         (is (close? 0.0000    (-> agrigento :distance)))
         (is (close? 13.583333 (-> agrigento :coordinates :x)))

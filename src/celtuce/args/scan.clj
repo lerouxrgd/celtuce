@@ -1,11 +1,11 @@
 (ns celtuce.args.scan
   (:require
-   [manifold.deferred :as d])
+   [manifold.deferred])
   (:import 
    (com.lambdaworks.redis 
-    ScanArgs ScanCursor
+    ScanArgs ScanCursor ScanIterator
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
-    ScoredValue)
+    KeyValue ScoredValue)
    (manifold.deferred Deferred)))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
@@ -51,31 +51,67 @@
    (doto (ScanCursor.)
      (.setCursor cursor))))
 
-(defn scan-seq* [scan-fn cursor args]
-  (let [cursor (if (instance? Deferred cursor) @cursor cursor)]
+(defn chunked-scan-seq* [scan-fn cursor args]
+  (let [cursor (if (instance? clojure.lang.IDeref cursor) @cursor cursor)]
     (when-not (finished? cursor)
       (let [cursor-res (if args (scan-fn cursor args) (scan-fn cursor))]
         (lazy-seq (cons (scan-res cursor-res)
-                        (scan-seq* scan-fn cursor-res args)))))))
+                        (chunked-scan-seq* scan-fn cursor-res args)))))))
 
-(defmacro scan-seq 
+(defmacro chunked-scan-seq
   "Takes a scan EXPR composed of:
    - a command: \"scan\", \"sscan\", \"hscan\", \"zscan\"
    - a key when the command is not \"scan\"
    - optionals: ScanCursor c, ScanArgs args
-  Returns a lazy seq that calls scan-res on each iteration result."
+  Returns a lazy seq that calls scan-res on each cursor iteration result (chunk)."
   [scan-expr]
   (let [[scan-cmd this a1 a2 a3] scan-expr]
     `(cond 
        ;; scan-cmd is: SCAN
        ;; a1 is ScanCursor, a2 is ScanArgs
        (or (every? nil? [~a1 ~a2 ~a3]) (instance? ScanCursor ~a1))
-       (scan-seq* (partial ~scan-cmd ~this) (or ~a1 (scan-cursor)) ~a2)
+       (chunked-scan-seq* (partial ~scan-cmd ~this) (or ~a1 (scan-cursor)) ~a2)
        ;; scan-cmd is: SSCAN, HSCAN, or ZSCAN
        ;; a1 is a key, a2 is ScanCursor, a3 is ScanArgs
        (not= nil ~a1)
-       (scan-seq* (partial ~scan-cmd ~this ~a1) (or ~a2 (scan-cursor)) ~a3)
+       (chunked-scan-seq* (partial ~scan-cmd ~this ~a1) (or ~a2 (scan-cursor)) ~a3)
        ;; invalid arguments for the given scan-cmd
        :else (throw (ex-info "malformed scan command" {:scan-cmd (name '~scan-cmd)
                                                        :args ['~a1 '~a2 '~a3]})))))
+
+(defn scan-seq
+  ""
+  ([cmds]
+   (iterator-seq (ScanIterator/scan cmds)))
+  ([cmds args]
+   (iterator-seq (ScanIterator/scan cmds ^ScanArgs args))))
+
+(defn hscan-seq
+  ""
+  ([cmds key]
+   (->> (ScanIterator/hscan cmds key)
+        (iterator-seq)
+        (map (fn [^KeyValue kv] [(.key kv) (.value kv)]))))
+  ([cmds key args]
+   (->> (ScanIterator/hscan cmds key ^ScanArgs args)
+        (iterator-seq)
+        (map (fn [^KeyValue kv] [(.key kv) (.value kv)])))))
+
+(defn sscan-seq
+  ""
+  ([cmds key]
+   (iterator-seq (ScanIterator/sscan cmds key)))
+  ([cmds key args]
+   (iterator-seq (ScanIterator/sscan cmds key ^ScanArgs args))))
+
+(defn zscan-seq
+  ""
+  ([cmds key]
+   (->> (ScanIterator/zscan cmds key)
+        (iterator-seq)
+        (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))))
+  ([cmds key args]
+   (->> (ScanIterator/zscan cmds key)
+        (iterator-seq)
+        (map (fn [^ScoredValue sv] [(.score sv) (.value sv)])))))
 

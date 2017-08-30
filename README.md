@@ -118,7 +118,7 @@ lein test
 ## License
 
 * [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-* Wrapper of https://github.com/mp911de/lettuce
+* Wrapper of https://github.com/lettuce-io/lettuce-core
 
 [lettuce]: https://github.com/lettuce-io/lettuce-core
 [wiki-uri]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-URI-and-connection-details#uri-syntax

@@ -18,8 +18,8 @@
   "Binds local @pub and @sub with different connections, 
   registers the given listener on @sub"
   [listener & body]
-  `(let [rserv-pub# (conn/->pubsub (conn/redis-server redis-url))
-         rserv-sub# (conn/->pubsub (conn/redis-server redis-url))]
+  `(let [rserv-pub# (conn/as-pubsub (conn/redis-server redis-url))
+         rserv-sub# (conn/as-pubsub (conn/redis-server redis-url))]
      (conn/add-listener! rserv-sub# ~listener)
      (with-local-vars
        [~'pub (conn/commands-sync rserv-pub#)

@@ -18,8 +18,8 @@
   "Binds local @pub and @sub with different connections, 
   registers the given listener on @sub"
   [listener & body]
-  `(let [rclust-pub# (conn/->pubsub (conn/redis-cluster redis-url))
-         rclust-sub# (conn/->pubsub (conn/redis-cluster redis-url))]
+  `(let [rclust-pub# (conn/as-pubsub (conn/redis-cluster redis-url))
+         rclust-sub# (conn/as-pubsub (conn/redis-cluster redis-url))]
      (conn/add-listener! rclust-sub# ~listener)
      (with-local-vars
        [~'pub (conn/commands-sync rclust-pub#)

@@ -76,9 +76,9 @@ Redis prevents publishing and subscribing on the same connection.
 The following contrive example demonstrates pubsub usage with two connections.
 
 ```clj
-;; note that conn/->pubsub also works on cluster connectors
-(def conn-pub (conn/->pubsub (conn/redis-server "redis://localhost:6379")))
-(def conn-sub (conn/->pubsub (conn/redis-server "redis://localhost:6379")))
+;; note that conn/as-pubsub also works on cluster connectors
+(def conn-pub (conn/as-pubsub (conn/redis-server "redis://localhost:6379")))
+(def conn-sub (conn/as-pubsub (conn/redis-server "redis://localhost:6379")))
 
 (def pub (conn/commands-sync conn-pub))
 (def sub (conn/commands-sync conn-sub))

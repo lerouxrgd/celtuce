@@ -7,8 +7,11 @@
    (java.util.concurrent TimeUnit)
    (com.lambdaworks.redis
     RedisClient
-    ClientOptions ClientOptions$DisconnectedBehavior
+    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
     SocketOptions SslOptions)
+   (com.lambdaworks.redis.cluster
+    ClusterClientOptions ClusterClientOptions$Builder
+    ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
    (com.lambdaworks.redis.codec RedisCodec)
    (com.lambdaworks.redis.api StatefulRedisConnection)
    (com.lambdaworks.redis.cluster RedisClusterClient)
@@ -25,7 +28,7 @@
   (shutdown       [this]))
 
 (defn ^SocketOptions socket-options
-  "Internal helper to build SocketOptions, used by client-options"
+  "Internal helper to build SocketOptions, used by b-client-options"
   [opts]
   (cond-> (SocketOptions/builder)
     (and (contains? opts :timeout)
@@ -38,7 +41,7 @@
     true (.build)))
 
 (defn ^SslOptions ssl-options
-  "Internal helper to build SslOptions, used by client-options"
+  "Internal helper to build SslOptions, used by b-client-options"
   [opts]
   (cond-> (SslOptions/builder)
     ;; provider setup
@@ -79,40 +82,68 @@
     ;; finally, build
     true (.build)))
 
-(defn ^ClientOptions client-options 
-  "Builds a ClientOptions from a map of options"
+(defn ^ClientOptions$Builder b-client-options
+  "Sets up a ClientOptions builder from a map of options"
+  ([opts]
+   (b-client-options (ClientOptions/builder) opts))
+  ([^ClientOptions$Builder builder opts]
+   (cond-> builder
+     (contains? opts :ping-before-sctivate-connection)
+     (.pingBeforeActivateConnection (:ping-before-sctivate-connection opts))
+     (contains? opts :auto-reconnect)
+     (.autoReconnect (:auto-reconnect opts))
+     (contains? opts :suspend-reconnect-on-protocol-failure)
+     (.suspendReconnectOnProtocolFailure (:suspend-reconnect-on-protocol-failure opts))
+     (contains? opts :cancel-commands-on-reconnect-failure)
+     (.cancelCommandsOnReconnectFailure (:cancel-commands-on-reconnect-failure opts))
+     (contains? opts :request-queue-size)
+     (.requestQueueSize (:request-queue-size opts))
+     (contains? opts :disconnected-behavior)
+     (.disconnectedBehavior
+      (case (:disconnected-behavior opts)
+        :default          ClientOptions$DisconnectedBehavior/DEFAULT
+        :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
+        :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS
+        (throw (ex-info "Unknown :disconnected-behavior"
+                        {:found (:disconnected-behavior opts)
+                         :valids #{:default :accept-commands :reject-commands}}))))
+     (contains? opts :socket-options)
+     (.socketOptions (socket-options (:socket-options opts)))
+     (contains? opts :ssl-options)
+     (.sslOptions (:ssl-options opts)))))
+
+(defn ^ClusterTopologyRefreshOptions cluster-topo-refresh-options
+  "Internal helper to build ClusterTopologyRefreshOptions,
+  used by b-cluster-client-options"
   [opts]
-  (cond-> (ClientOptions/builder)
-    (contains? opts :ping-before-sctivate-connection)
-    (.pingBeforeActivateConnection (:ping-before-sctivate-connection opts))
-    (contains? opts :auto-reconnect)
-    (.autoReconnect (:auto-reconnect opts))
-    (contains? opts :suspend-reconnect-on-protocol-failure)
-    (.suspendReconnectOnProtocolFailure (:suspend-reconnect-on-protocol-failure opts))
-    (contains? opts :cancel-commands-on-reconnect-failure)
-    (.cancelCommandsOnReconnectFailure (:cancel-commands-on-reconnect-failure opts))
-    (contains? opts :request-queue-size)
-    (.requestQueueSize (:request-queue-size opts))
-    (contains? opts :disconnected-behavior)
-    (.disconnectedBehavior
-     (case (:disconnected-behavior opts)
-       :default          ClientOptions$DisconnectedBehavior/DEFAULT
-       :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
-       :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS
-       (throw (ex-info "Unknown :disconnected-behavior" opts))))
-    (contains? opts :socket-options)
-    (.socketOptions (socket-options (:socket-options opts)))
-    (contains? opts :ssl-options)
-    (.sslOptions (:ssl-options opts))
+  (cond-> (ClusterTopologyRefreshOptions/builder)
+    (contains? opts :enable-periodic-refresh)
+    (.enablePeriodicRefresh (:enable-periodic-refresh opts))
+    ;; TODO all other options
     true (.build)))
+
+(defn ^ClusterClientOptions$Builder b-cluster-client-options
+  "Sets up a ClusterClientOptions builder from a map of options"
+  [opts]
+  (cond-> (ClusterClientOptions/builder)
+    (contains? opts :validate-cluster-node-membership)
+    (.validateClusterNodeMembership (:validate-cluster-node-membership opts))
+    (contains? opts :max-redirects)
+    (.maxRedirects (:max-redirects opts))
+    (contains? opts :topology-refresh-options)
+    (.topologyRefreshOptions
+     (cluster-topo-refresh-options (:topology-refresh-options opts)))
+    true (b-client-options opts)))
 
 ;;
 ;; Redis Server
 ;;
 
 (defrecord RedisServer 
-    [^RedisClient redis-cli
+    [^RedisClient redis-client
+     cient-options
      ^StatefulRedisConnection stateful-conn
+     conn-options
      ^RedisCodec codec]
   RedisConnector
   (commands-sync [this]
@@ -127,30 +158,39 @@
     (.reset stateful-conn))
   (shutdown [this]
     (.close stateful-conn)
-    (.shutdown redis-cli)))
+    (.shutdown redis-client)))
 
 (defn redis-server
   [^String redis-uri & 
    {codec :codec
-    cli-opts :client-options
+    client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
      :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
-    :or {codec (nippy-codec) cli-opts {}}}]
-  (let [redis-cli (RedisClient/create redis-uri)
-        _ (.setOptions redis-cli (client-options cli-opts))
-        stateful-conn (.connect redis-cli ^RedisCodec codec)]
+    :or {codec (nippy-codec) client-opts {}}}]
+  (let [redis-client (RedisClient/create redis-uri)
+        _ (.setOptions redis-client (.build (b-client-options client-options)))
+        stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
       (.setTimeout stateful-conn conn-timeout conn-unit))
     (.setAutoFlushCommands stateful-conn auto-flush)
-    (->RedisServer redis-cli stateful-conn codec)))
+    (map->RedisServer
+     {:redis-client   redis-client
+      :client-options client-options
+      :codec          codec
+      :stateful-conn  stateful-conn
+      :conn-options   {:auto-flush auto-flush
+                       :timeout    conn-timeout
+                       :unit       conn-unit}})))
 
 ;;
 ;; Redis Cluster
 ;;
 
 (defrecord RedisCluster 
-    [^RedisClusterClient redis-cli
+    [^RedisClusterClient redis-client
+     client-options
      ^StatefulRedisClusterConnection stateful-conn
+     conn-options
      ^RedisCodec codec]
   RedisConnector
   (commands-sync [this]
@@ -165,22 +205,30 @@
     (.reset stateful-conn))
   (shutdown [this]
     (.close stateful-conn)
-    (.shutdown redis-cli)))
+    (.shutdown redis-client)))
 
 (defn redis-cluster
   [^String redis-uri &
    {codec :codec
-    cli-opts :client-options
+    client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
      :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
-    :or {codec (nippy-codec) cli-opts {}}}]
-  (let [redis-cli (RedisClusterClient/create redis-uri)
-        ;; TODO call .setOptions on redis-cli
-        stateful-conn (.connect redis-cli codec)]
+    :or {codec (nippy-codec) client-options {}}}]
+  (let [redis-client (RedisClusterClient/create redis-uri)
+        _ (.setOptions redis-client
+                       (.build (b-cluster-client-options client-options)))
+        stateful-conn (.connect redis-client codec)]
     (when (and conn-timeout conn-unit)
       (.setTimeout stateful-conn conn-timeout conn-unit))
     (.setAutoFlushCommands stateful-conn auto-flush)
-    (->RedisCluster redis-cli stateful-conn codec)))
+    (map->RedisCluster
+     {:redis-client   redis-client
+      :client-options client-options
+      :codec          codec
+      :stateful-conn  stateful-conn
+      :conn-options   {:auto-flush auto-flush
+                       :timeout    conn-timeout
+                       :unit       conn-unit}})))
 
 ;;
 ;; Redis PubSub
@@ -191,7 +239,7 @@
   (add-listener! [this listener]))
 
 (defrecord RedisPubSub 
-    [redis-cli ^StatefulRedisPubSubConnection stateful-conn]
+    [redis-client ^StatefulRedisPubSubConnection stateful-conn]
   RedisConnector
   (commands-sync [this]
     (require '[celtuce.impl.pubsub])
@@ -205,9 +253,9 @@
     (.reset stateful-conn))
   (shutdown [this]
     (.close stateful-conn)
-    (condp instance? redis-cli
-      RedisClusterClient (.shutdown ^RedisClusterClient redis-cli)
-      RedisClient        (.shutdown ^RedisClient        redis-cli)))
+    (condp instance? redis-client
+      RedisClusterClient (.shutdown ^RedisClusterClient redis-client)
+      RedisClient        (.shutdown ^RedisClient        redis-client)))
   Listenable
   (add-listener! [this listener]
     (.addListener
@@ -227,10 +275,10 @@
        (punsubscribed [_ p cnt]
          (cmds/punsubscribed listener p cnt))))))
 
-(defn ->pubsub [{:keys [redis-cli ^RedisCodec codec] :as redis-connector}]
+(defn as-pubsub [{:keys [redis-client ^RedisCodec codec] :as redis-connector}]
   (->RedisPubSub
-   redis-cli
-   (condp instance? redis-cli
-     RedisClusterClient (.connectPubSub ^RedisClusterClient redis-cli codec)
-     RedisClient        (.connectPubSub ^RedisClient        redis-cli codec))))
+   redis-client
+   (condp instance? redis-client
+     RedisClusterClient (.connectPubSub ^RedisClusterClient redis-client codec)
+     RedisClient        (.connectPubSub ^RedisClient        redis-client codec))))
 

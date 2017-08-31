@@ -27,7 +27,29 @@
   (reset          [this])
   (shutdown       [this]))
 
-(defn ^SocketOptions socket-options
+(def kw->tunit
+  {:nanoseconds  TimeUnit/NANOSECONDS
+   :microseconds TimeUnit/MICROSECONDS
+   :milliseconds TimeUnit/MILLISECONDS
+   :seconds      TimeUnit/SECONDS
+   :minutes      TimeUnit/MINUTES
+   :hours        TimeUnit/HOURS
+   :days         TimeUnit/DAYS})
+
+(def kw->dbehavior
+  {:default          ClientOptions$DisconnectedBehavior/DEFAULT
+   :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
+   :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS})
+
+(def kw->rtrigger
+  {:moved-redirect
+   ClusterTopologyRefreshOptions$RefreshTrigger/MOVED_REDIRECT
+   :ask-redirect
+   ClusterTopologyRefreshOptions$RefreshTrigger/ASK_REDIRECT
+   :persistent-reconnects
+   ClusterTopologyRefreshOptions$RefreshTrigger/PERSISTENT_RECONNECTS})
+
+(defn- ^SocketOptions socket-options
   "Internal helper to build SocketOptions, used by b-client-options"
   [opts]
   (cond-> (SocketOptions/builder)
@@ -40,7 +62,7 @@
     (.tcpNoDelay (:tcp-no-delay opts))
     true (.build)))
 
-(defn ^SslOptions ssl-options
+(defn- ^SslOptions ssl-options
   "Internal helper to build SslOptions, used by b-client-options"
   [opts]
   (cond-> (SslOptions/builder)
@@ -82,7 +104,7 @@
     ;; finally, build
     true (.build)))
 
-(defn ^ClientOptions$Builder b-client-options
+(defn- ^ClientOptions$Builder b-client-options
   "Sets up a ClientOptions builder from a map of options"
   ([opts]
    (b-client-options (ClientOptions/builder) opts))
@@ -99,30 +121,42 @@
      (contains? opts :request-queue-size)
      (.requestQueueSize (:request-queue-size opts))
      (contains? opts :disconnected-behavior)
-     (.disconnectedBehavior
-      (case (:disconnected-behavior opts)
-        :default          ClientOptions$DisconnectedBehavior/DEFAULT
-        :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
-        :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS
-        (throw (ex-info "Unknown :disconnected-behavior"
-                        {:found (:disconnected-behavior opts)
-                         :valids #{:default :accept-commands :reject-commands}}))))
+     (.disconnectedBehavior (-> opts :disconnected-behavior kw->dbehavior))
      (contains? opts :socket-options)
      (.socketOptions (socket-options (:socket-options opts)))
      (contains? opts :ssl-options)
      (.sslOptions (:ssl-options opts)))))
 
-(defn ^ClusterTopologyRefreshOptions cluster-topo-refresh-options
+(defn- ^ClusterTopologyRefreshOptions cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
   used by b-cluster-client-options"
   [opts]
   (cond-> (ClusterTopologyRefreshOptions/builder)
     (contains? opts :enable-periodic-refresh)
     (.enablePeriodicRefresh (:enable-periodic-refresh opts))
-    ;; TODO all other options
+    (contains? opts :refresh-period)
+    (.refreshPeriod (-> opts :refresh-period :period)
+                    (-> opts :refresh-period :unit kw->tunit))
+    (contains? opts :close-stale-connections)
+    (.closeStaleConnections (:close-stale-connections opts))
+    (contains? opts :dynamic-refresh-sources)
+    (.dynamicRefreshSources (:dynamic-refresh-sources opts))
+    (contains? :enable-adaptive-refresh-trigger)
+    (cond->
+      (= :all (:enable-adaptive-refresh-trigger opts))
+      (.enableAllAdaptiveRefreshTriggers)
+      (sequential? (:enable-adaptive-refresh-trigger opts))
+      (.enableAdaptiveRefreshTrigger
+       (into-array (->> opts :enable-adaptive-refresh-trigger (map kw->rtrigger)))))
+    (contains? opts :adaptive-refresh-triggers-timeout)
+    (.adaptiveRefreshTriggersTimeout
+     (-> opts :adaptive-refresh-triggers-timeout :timeout)
+     (-> opts :adaptive-refresh-triggers-timeout :unit kw->tunit))
+    (contains? opts :refresh-triggers-reconnect-attempts)
+    (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))
 
-(defn ^ClusterClientOptions$Builder b-cluster-client-options
+(defn- ^ClusterClientOptions$Builder b-cluster-client-options
   "Sets up a ClusterClientOptions builder from a map of options"
   [opts]
   (cond-> (ClusterClientOptions/builder)
@@ -165,13 +199,13 @@
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
-     :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
+     :or {auto-flush true conn-unit :milliseconds}} :conn-options
     :or {codec (nippy-codec) client-opts {}}}]
   (let [redis-client (RedisClient/create redis-uri)
         _ (.setOptions redis-client (.build (b-client-options client-options)))
         stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn conn-timeout conn-unit))
+      (.setTimeout stateful-conn conn-timeout (kw->tunit conn-unit)))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisServer
      {:redis-client   redis-client
@@ -212,14 +246,14 @@
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
-     :or {auto-flush true conn-unit TimeUnit/MILLISECONDS}} :conn-options
+     :or {auto-flush true conn-unit :milliseonds}} :conn-options
     :or {codec (nippy-codec) client-options {}}}]
   (let [redis-client (RedisClusterClient/create redis-uri)
         _ (.setOptions redis-client
                        (.build (b-cluster-client-options client-options)))
         stateful-conn (.connect redis-client codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn conn-timeout conn-unit))
+      (.setTimeout stateful-conn conn-timeout (kw->tunit conn-unit)))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisCluster
      {:redis-client   redis-client

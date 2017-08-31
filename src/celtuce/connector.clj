@@ -55,7 +55,7 @@
   (cond-> (SocketOptions/builder)
     (and (contains? opts :timeout)
          (contains? opts :unit))
-    (.connectTimeout (:timeout opts) (:unit opts))
+    (.connectTimeout (:timeout opts) (kw->tunit (:unit opts)))
     (contains? opts :keep-alive)
     (.keepAlive (:keep-alive opts))
     (contains? opts :tcp-no-delay)
@@ -125,7 +125,7 @@
      (contains? opts :socket-options)
      (.socketOptions (socket-options (:socket-options opts)))
      (contains? opts :ssl-options)
-     (.sslOptions (:ssl-options opts)))))
+     (.sslOptions (ssl-options (:ssl-options opts))))))
 
 (defn- ^ClusterTopologyRefreshOptions cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
@@ -141,13 +141,14 @@
     (.closeStaleConnections (:close-stale-connections opts))
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
-    (contains? :enable-adaptive-refresh-trigger)
+    (contains? opts :enable-adaptive-refresh-trigger)
     (cond->
       (= :all (:enable-adaptive-refresh-trigger opts))
       (.enableAllAdaptiveRefreshTriggers)
-      (sequential? (:enable-adaptive-refresh-trigger opts))
+      (set? (:enable-adaptive-refresh-trigger opts))
       (.enableAdaptiveRefreshTrigger
-       (into-array (->> opts :enable-adaptive-refresh-trigger (map kw->rtrigger)))))
+       (into-array ClusterTopologyRefreshOptions$RefreshTrigger
+                   (->> opts :enable-adaptive-refresh-trigger (map kw->rtrigger)))))
     (contains? opts :adaptive-refresh-triggers-timeout)
     (.adaptiveRefreshTriggersTimeout
      (-> opts :adaptive-refresh-triggers-timeout :timeout)
@@ -199,7 +200,7 @@
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
-     :or {auto-flush true conn-unit :milliseconds}} :conn-options
+     :or {auto-flush true}} :conn-options
     :or {codec (nippy-codec) client-opts {}}}]
   (let [redis-client (RedisClient/create redis-uri)
         _ (.setOptions redis-client (.build (b-client-options client-options)))
@@ -246,7 +247,7 @@
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
-     :or {auto-flush true conn-unit :milliseonds}} :conn-options
+     :or {auto-flush true}} :conn-options
     :or {codec (nippy-codec) client-options {}}}]
   (let [redis-client (RedisClusterClient/create redis-uri)
         _ (.setOptions redis-client

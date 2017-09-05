@@ -6,6 +6,16 @@ An idiomatic Clojure Redis client wrapping the Java client [Lettuce][].
 
 [![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce)
 
+Or pick up [modules][] that you need:
+
+* [celtuce-core][]: Main module with all the basic functionalities (required).
+
+  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
+
+* [celtuce-manifold][]: Implementation of asynchronous commands based on [Manifold][]
+
+  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-manifold.svg)](https://clojars.org/celtuce-manifold)
+
 ### Redis Connectors
 
 Connectors are available for both Redis `Server` and `Cluster`.
@@ -29,15 +39,21 @@ Especially [Lettuce][] original `String` serializer can be used as follows:
   :codec (celtuce.codec/utf8-string-codec))
 ```
 
-Other connectors options:
+Other connector options:
 
-* `:timeout` timeout for executing commands
-* `:unit` corresponding `java.util.TimeUnit`
-* `:auto-flush` automatically flush commands on the underlying netty connection
+* `:conn-options`
+  * `:timeout` timeout for executing commands
+  * `:unit` corresponding `java.util.TimeUnit`
+  * `:auto-flush` automatically flush commands on the underlying netty connection
+
+* `:client-options`
+  * TODO describe
+
+Note that you can find default values in the [tests][tests-connector].
 
 ### Redis Commands
 
-All Redis commands are implemented using protocols in `celtuce.commands`.
+All Redis commands are implemented using protocols in `celtuce.commands` namespace in [celtuce-core][] module.
 
 ```clj
 (require '[celtuce.commands :as redis])
@@ -51,21 +67,6 @@ All Redis commands are implemented using protocols in `celtuce.commands`.
 
 (redis/set cmds :foo "bar")
 (redis/get cmds :foo)
-
-(conn/shutdown connector)
-```
-
-**Async**
-
-Asynchronous execution is wrapped with [Manifold][] `deferred` values that allows for
-flexible composition.
-
-```clj
-(def connector (conn/redis-server "redis://localhost:6379"))
-(def cmds (conn/commands-async connector))
-
-@(redis/set cmds :foo "bar")
-@(redis/get cmds :foo)
 
 (conn/shutdown connector)
 ```
@@ -112,15 +113,18 @@ and a redis cluster running on `localhost:30001`.
 Then simply run:
 
 ```sh
-lein test
+lein modules do clean, install, test
 ```
 
 ## License
 
 * [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-* Wrapper of https://github.com/lettuce-io/lettuce-core
 
 [lettuce]: https://github.com/lettuce-io/lettuce-core
 [wiki-uri]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-URI-and-connection-details#uri-syntax
+[modules]: https://github.com/lerouxrgd/celtuce/tree/master/modules
+[celtuce-core]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-core
+[celtuce-manifold]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-manifold
+[tests-connector]: https://github.com/lerouxrgd/celtuce/blob/master/test/celtuce/connector_test.clj
 [nippy]: https://github.com/ptaoussanis/nippy
 [manifold]: https://github.com/ztellman/manifold

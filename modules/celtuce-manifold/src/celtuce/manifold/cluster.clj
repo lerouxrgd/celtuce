@@ -1,4 +1,4 @@
-(ns celtuce.impl.cluster.async
+(ns celtuce.manifold.cluster
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [celtuce.commands :refer :all]

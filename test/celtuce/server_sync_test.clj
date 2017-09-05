@@ -78,7 +78,7 @@
     (let [cur (redis/hscan
                *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           res (redis/scan-res cur)]
-      (is (= false (celtuce.args.scan/finished? cur)))
+      (is (= false (celtuce.scan/finished? cur)))
       (is (= true (map? res)))
       (is (<= 5 (count res) 15))) ;; about 10
     (let [els1 (->> (redis/scan-args :limit 50)
@@ -95,7 +95,7 @@
     (let [cur (redis/hscan
                *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           res (redis/scan-res cur)]
-      (is (= true (celtuce.args.scan/finished? cur)))
+      (is (= true (celtuce.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              res)))
     (is (thrown? Exception

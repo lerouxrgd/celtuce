@@ -4,11 +4,11 @@ An idiomatic Clojure Redis client wrapping the Java client [Lettuce][].
 
 ## Usage
 
-[![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce)
+Include all [modules][] with: [![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce)
 
-Or pick up [modules][] that you need:
+Or pick up only the ones you need:
 
-* [celtuce-core][]: Main module with all the basic functionalities (required).
+* [celtuce-core][]: Main module with all the core functionalities (required).
 
   [![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
 
@@ -19,6 +19,8 @@ Or pick up [modules][] that you need:
 ### Redis Connectors
 
 Connectors are available for both Redis `Server` and `Cluster`.
+They are defined in `celtuce.connector` namespace of [celtuce-core][] module.
+
 
 ```clj
 (require '[celtuce.connector :as conn])
@@ -41,19 +43,19 @@ Especially [Lettuce][] original `String` serializer can be used as follows:
 
 Other connector options:
 
-* `:conn-options`
+* `:conn-options` a map of connection options
   * `:timeout` timeout for executing commands
-  * `:unit` corresponding `java.util.TimeUnit`
-  * `:auto-flush` automatically flush commands on the underlying netty connection
+  * `:unit` corresponding `TimeUnit` in keyword (i.e. `:milliseconds`, etc)
+  * `:auto-flush` automatically flush commands on the underlying Netty connection
 
-* `:client-options`
-  * TODO describe
+* `:client-options`: a map of client options
+  * [Client-options][] available in Lettuce, with their names keywordized
 
 Note that you can find default values in the [tests][tests-connector].
 
 ### Redis Commands
 
-All Redis commands are implemented using protocols in `celtuce.commands` namespace in [celtuce-core][] module.
+All Redis commands are implemented using protocols in `celtuce.commands` namespace of [celtuce-core][] module.
 
 ```clj
 (require '[celtuce.commands :as redis])
@@ -122,9 +124,12 @@ lein modules do clean, install, test
 
 [lettuce]: https://github.com/lettuce-io/lettuce-core
 [wiki-uri]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-URI-and-connection-details#uri-syntax
+[client-options]: https://github.com/lettuce-io/lettuce-core/wiki/Client-options
+
 [modules]: https://github.com/lerouxrgd/celtuce/tree/master/modules
 [celtuce-core]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-core
 [celtuce-manifold]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-manifold
 [tests-connector]: https://github.com/lerouxrgd/celtuce/blob/master/test/celtuce/connector_test.clj
+
 [nippy]: https://github.com/ptaoussanis/nippy
 [manifold]: https://github.com/ztellman/manifold

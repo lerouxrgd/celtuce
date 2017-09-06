@@ -1,8 +1,7 @@
 # celtuce-core
 
-Core module that defines the Redis commands.
-
-Provides main functionalities and an implementation for synchronous commands.
+Main module that defines the Redis commands.
+Provides core functionalities and an implementation for synchronous commands.
 
 ## Usage
 

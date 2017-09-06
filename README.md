@@ -4,7 +4,7 @@ An idiomatic Clojure Redis client wrapping the Java client [Lettuce][].
 
 ## Usage
 
-Include all [modules][] with: [![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce)
+ [![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce) to include all [modules][].
 
 Or pick up only the ones you need:
 
@@ -51,7 +51,7 @@ Other connector options:
 * `:client-options`: a map of client options
   * [Client-options][] available in Lettuce, with their names keywordized
 
-Note that you can find default values in the [tests][tests-connector].
+Note that you can find options default values in the [tests][tests-connector].
 
 ### Redis Commands
 

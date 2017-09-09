@@ -21,7 +21,6 @@
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
   (commands-sync  [this])
-  (commands-async [this])
   (flush-commands [this])
   (set-options    [this options])
   (reset          [this])
@@ -182,11 +181,8 @@
      ^RedisCodec codec]
   RedisConnector
   (commands-sync [this]
-    (require '[celtuce.impl.server.sync])
+    (require '[celtuce.impl.server])
     (.sync stateful-conn))
-  (commands-async [this]
-    (require '[celtuce.impl.server.async])
-    (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
   (reset [this] 
@@ -229,11 +225,8 @@
      ^RedisCodec codec]
   RedisConnector
   (commands-sync [this]
-    (require '[celtuce.impl.cluster.sync])
+    (require '[celtuce.impl.cluster])
     (.sync stateful-conn))
-  (commands-async [this]
-    (require '[celtuce.impl.cluster.async])
-    (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
   (reset [this] 
@@ -279,9 +272,6 @@
   (commands-sync [this]
     (require '[celtuce.impl.pubsub])
     (.sync stateful-conn))
-  (commands-async [this]
-    (require '[celtuce.impl.pubsub])
-    (.async stateful-conn))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
   (reset [this] 

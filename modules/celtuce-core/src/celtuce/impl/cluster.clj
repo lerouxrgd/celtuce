@@ -1,4 +1,4 @@
-(ns celtuce.impl.cluster.sync
+(ns celtuce.impl.cluster
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [celtuce.commands :refer :all]

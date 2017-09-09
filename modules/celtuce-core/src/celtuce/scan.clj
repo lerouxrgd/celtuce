@@ -1,12 +1,9 @@
-(ns celtuce.args.scan
-  (:require
-   [manifold.deferred])
+(ns celtuce.scan
   (:import 
    (com.lambdaworks.redis 
     ScanArgs ScanCursor ScanIterator
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
-    KeyValue ScoredValue)
-   (manifold.deferred Deferred)))
+    KeyValue ScoredValue)))
 
 (defn ^ScanArgs scan-args [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
@@ -39,10 +36,7 @@
   (scan-res [this] 
     (->> (.getValues this)
          (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
-         (into [])))
-  Deferred
-  (scan-res [this]
-    (scan-res @this)))
+         (into []))))
 
 (defn ^ScanCursor scan-cursor 
   ([]
@@ -80,14 +74,14 @@
                                                        :args ['~a1 '~a2 '~a3]})))))
 
 (defn scan-seq
-  ""
+  "Lazy SCAN sequence, takes optional scan-args"
   ([cmds]
    (iterator-seq (ScanIterator/scan cmds)))
   ([cmds args]
    (iterator-seq (ScanIterator/scan cmds ^ScanArgs args))))
 
 (defn hscan-seq
-  ""
+  "Lazy HSCAN sequence, takes optional scan-args"
   ([cmds key]
    (->> (ScanIterator/hscan cmds key)
         (iterator-seq)
@@ -98,14 +92,14 @@
         (map (fn [^KeyValue kv] [(.key kv) (.value kv)])))))
 
 (defn sscan-seq
-  ""
+  "Lazy SSCAN sequence, takes optional scan-args"
   ([cmds key]
    (iterator-seq (ScanIterator/sscan cmds key)))
   ([cmds key args]
    (iterator-seq (ScanIterator/sscan cmds key ^ScanArgs args))))
 
 (defn zscan-seq
-  ""
+  "Lazy ZSCAN sequence, takes optional scan-args"
   ([cmds key]
    (->> (ScanIterator/zscan cmds key)
         (iterator-seq)

@@ -1,4 +1,4 @@
-(ns celtuce.impl.server.async
+(ns celtuce.manifold.server
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [celtuce.commands :refer :all]

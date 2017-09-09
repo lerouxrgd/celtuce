@@ -1,38 +1,39 @@
-(ns celtuce.server-async-test
+(ns celtuce.cluster-manifold-test
   (:require 
    [clojure.test :refer :all]
    [celtuce.commands :as redis]
-   [celtuce.connector :as conn]))
+   [celtuce.connector :as conn]
+   [celtuce.manifold :refer [commands-manifold]]))
 
-(def redis-url "redis://localhost:6379")
+(def redis-url "redis://localhost:30001")
 (def ^:dynamic *cmds*)
 
 (defmacro with-str-cmds [& body]
-  `(let [rserv# (conn/redis-server redis-url
-                                   :codec (celtuce.codec/utf8-string-codec))]
-     (binding [*cmds* (conn/commands-async rserv#)]
+  `(let [rclust# (conn/redis-cluster redis-url
+                                     :codec (celtuce.codec/utf8-string-codec))]
+     (binding [*cmds* (commands-manifold rclust#)]
        (try ~@body
-            (finally (conn/shutdown rserv#))))))
+            (finally (conn/shutdown rclust#))))))
 
 (defmacro with-pubsub-cmds 
   "Binds local @pub and @sub with different connections, 
   registers the given listener on @sub"
   [listener & body]
-  `(let [rserv-pub# (conn/as-pubsub (conn/redis-server redis-url))
-         rserv-sub# (conn/as-pubsub (conn/redis-server redis-url))]
-     (conn/add-listener! rserv-sub# ~listener)
+  `(let [rclust-pub# (conn/as-pubsub (conn/redis-cluster redis-url))
+         rclust-sub# (conn/as-pubsub (conn/redis-cluster redis-url))]
+     (conn/add-listener! rclust-sub# ~listener)
      (with-local-vars
-       [~'pub (conn/commands-sync rserv-pub#)
-        ~'sub (conn/commands-sync rserv-sub#)]
+       [~'pub (conn/commands-sync rclust-pub#)
+        ~'sub (conn/commands-sync rclust-sub#)]
        (try ~@body
-            (finally (conn/shutdown rserv-pub#)
-                     (conn/shutdown rserv-sub#))))))
+            (finally (conn/shutdown rclust-pub#)
+                     (conn/shutdown rclust-sub#))))))
 
 (defn cmds-fixture [test-function]
-  (let [rserv (conn/redis-server redis-url)]
-    (binding [*cmds* (conn/commands-async rserv)]
+  (let [rclust (conn/redis-cluster redis-url)]
+    (binding [*cmds* (commands-manifold rclust)]
       (try (test-function)
-           (finally (conn/shutdown rserv))))))
+           (finally (conn/shutdown rclust))))))
 
 (defn flush-fixture [test-function]
   (redis/flushall *cmds*)
@@ -78,22 +79,22 @@
     (let [cur @(redis/hscan
                 *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           res (redis/scan-res cur)]
-      (is (= false (celtuce.args.scan/finished? cur)))
+      (is (= false (celtuce.scan/finished? cur)))
       (is (= true (map? res)))
       (is (<= 5 (count res) 15))) ;; about 10
-    (let [els1 (->> (redis/scan-args :limit 50)
-                    (redis/hscan *cmds* "hl" (redis/scan-cursor))
-                    (redis/chunked-scan-seq) 
-                    (take 100))]
-      (is (<= 95 (count els1) 105)) ;; about 100
+    (let [els (->> (redis/scan-args :limit 50)
+                   (redis/hscan *cmds* "hl" (redis/scan-cursor))
+                   (redis/chunked-scan-seq) 
+                   (take 100))]
+      (is (<= 95 (count els) 105)) ;; about 100
       (is (= @(redis/hgetall *cmds* "hl")
-             (apply merge els1))))
+             (apply merge els))))
     @(redis/hmset
       *cmds* "hs" (->> (range 100) (map str) (split-at 50) (apply zipmap)))
     (let [cur @(redis/hscan
                 *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           res (redis/scan-res cur)]
-      (is (= true (celtuce.args.scan/finished? cur)))
+      (is (= true (celtuce.scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              res)))
     (is (thrown? Exception

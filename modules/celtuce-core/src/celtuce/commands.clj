@@ -2,17 +2,15 @@
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require 
    [potemkin :refer [import-vars]]
-   [celtuce.args.scan]
    [celtuce.args.migrate]
    [celtuce.args.sort]
    [celtuce.args.bitfield]
    [celtuce.args.set]
    [celtuce.args.zset]
    [celtuce.args.kill]
-   [celtuce.args.geo]))
+   [celtuce.args.geo]
+   [celtuce.scan]))
 
-(import-vars [celtuce.args.scan     scan-cursor scan-args scan-res chunked-scan-seq
-                                    scan-seq hscan-seq zscan-seq sscan-seq])
 (import-vars [celtuce.args.migrate  migrate-args])
 (import-vars [celtuce.args.sort     sort-args])
 (import-vars [celtuce.args.bitfield bitfield-args])
@@ -20,6 +18,8 @@
 (import-vars [celtuce.args.zset     zstore-args])
 (import-vars [celtuce.args.kill     kill-args])
 (import-vars [celtuce.args.geo      geo-args georadius-store-args])
+(import-vars [celtuce.scan          scan-cursor scan-args scan-res chunked-scan-seq
+                                    scan-seq hscan-seq zscan-seq sscan-seq])
 
 (defprotocol HashCommands
   "Redis Hash Commands"

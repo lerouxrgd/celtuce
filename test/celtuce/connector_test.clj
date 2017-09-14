@@ -14,7 +14,7 @@
      :conn-options
      {:auto-flush true}
      :client-options
-     {:ping-before-sctivate-connection       false
+     {:ping-before-activate-connection       false
       :suspend-reconnect-on-protocol-failure false
       :cancel-commands-on-reconnect-failure  false
       :auto-reconnect                        true
@@ -32,7 +32,7 @@
      {:auto-flush true}
      :client-options
      {;; regular client-options
-      :ping-before-sctivate-connection       false
+      :ping-before-activate-connection       false
       :suspend-reconnect-on-protocol-failure false
       :cancel-commands-on-reconnect-failure  false
       :auto-reconnect                        true

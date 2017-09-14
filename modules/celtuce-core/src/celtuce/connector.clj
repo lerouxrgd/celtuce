@@ -109,8 +109,8 @@
    (b-client-options (ClientOptions/builder) opts))
   ([^ClientOptions$Builder builder opts]
    (cond-> builder
-     (contains? opts :ping-before-sctivate-connection)
-     (.pingBeforeActivateConnection (:ping-before-sctivate-connection opts))
+     (contains? opts :ping-before-activate-connection)
+     (.pingBeforeActivateConnection (:ping-before-activate-connection opts))
      (contains? opts :auto-reconnect)
      (.autoReconnect (:auto-reconnect opts))
      (contains? opts :suspend-reconnect-on-protocol-failure)

@@ -384,6 +384,15 @@
       (is (close? 166.2742 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :km)))
       (is (close? 103.3182 (redis/geodist *cmds* "Sicily" "Palermo" "Catania" :mi))))))
 
+(deftest transactional-commands-test
+  (testing "basic transaction"
+    (redis/multi *cmds*)
+    (redis/set   *cmds* :a 1)
+    (redis/set   *cmds* :b 2)
+    (redis/get   *cmds* :a)
+    (redis/get   *cmds* :b)
+    (is (= ["OK" "OK" 1 2] (redis/exec *cmds*)))))
+
 (deftest pubsub-commands-test
   (testing "simple pub/sub mechanism"
     (let [nb-sub (atom 0)

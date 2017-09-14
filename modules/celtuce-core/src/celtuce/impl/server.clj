@@ -567,5 +567,18 @@
                 (if-not c nil {:x (.x c) :y (.y c)})))
          (into [])))
   (geodist [this key from to unit]
-    (.geodist this key from to (->unit unit))))
+    (.geodist this key from to (->unit unit)))
 
+  TransactionalCommands
+  (discard [this]
+    (.discard this))
+  (exec [this]
+    (into [] (.exec this)))
+  (multi [this]
+    (.multi this))
+  (watch [this key]
+    (.watch this ^objects (into-array Object [key])))
+  (mwatch [this keys]
+    (.watch this ^objects (into-array Object keys)))
+  (unwatch [this]
+    (.unwatch this)))

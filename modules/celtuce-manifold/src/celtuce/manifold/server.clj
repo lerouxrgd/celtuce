@@ -616,4 +616,19 @@
                    %)
              #(into [] %)))
   (geodist [this key from to unit]
-    (d/->deferred (.geodist this key from to (->unit unit)))))
+    (d/->deferred (.geodist this key from to (->unit unit))))
+
+  TransactionalCommands
+  (discard [this]
+    (d/->deferred (.discard this)))
+  (exec [this]
+    (d/chain (d/->deferred (.exec this))
+             #(into [] %)))
+  (multi [this]
+    (d/->deferred (.multi this)))
+  (watch [this key]
+    (d/->deferred (.watch this ^objects (into-array Object [key]))))
+  (mwatch [this keys]
+    (d/->deferred (.watch this ^objects (into-array Object keys))))
+  (unwatch [this]
+    (d/->deferred (.unwatch this))))

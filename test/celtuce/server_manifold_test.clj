@@ -3,7 +3,8 @@
    [clojure.test :refer :all]
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]
-   [celtuce.manifold :refer [commands-manifold]]))
+   [celtuce.manifold :refer [commands-manifold]]
+   [manifold.deferred :as d]))
 
 (def redis-url "redis://localhost:6379")
 (def ^:dynamic *cmds*)
@@ -376,6 +377,15 @@
         (is (nil? dont-exist)))
       (is (close? 166.2742 @(redis/geodist *cmds* "Sicily" "Palermo" "Catania" :km)))
       (is (close? 103.3182 @(redis/geodist *cmds* "Sicily" "Palermo" "Catania" :mi))))))
+
+(deftest transactional-commands-test
+  (testing "basic transaction"
+    @(d/chain (redis/multi *cmds*)
+              (redis/set   *cmds* :a 1)
+              (redis/set   *cmds* :b 2)
+              (redis/get   *cmds* :a)
+              (redis/get   *cmds* :b))
+    (is (= ["OK" "OK" 1 2] @(redis/exec *cmds*)))))
 
 (deftest pubsub-commands-test
   (testing "simple pub/sub mechanism"

@@ -175,7 +175,7 @@
 
 (defrecord RedisServer 
     [^RedisClient redis-client
-     cient-options
+     client-options
      ^StatefulRedisConnection stateful-conn
      conn-options
      ^RedisCodec codec]
@@ -267,7 +267,7 @@
   (add-listener! [this listener]))
 
 (defrecord RedisPubSub 
-    [redis-client ^StatefulRedisPubSubConnection stateful-conn]
+    [redis-client ^StatefulRedisPubSubConnection stateful-conn codec]
   RedisConnector
   (commands-sync [this]
     (require '[celtuce.impl.pubsub])
@@ -305,5 +305,6 @@
    redis-client
    (condp instance? redis-client
      RedisClusterClient (.connectPubSub ^RedisClusterClient redis-client codec)
-     RedisClient        (.connectPubSub ^RedisClient        redis-client codec))))
+     RedisClient        (.connectPubSub ^RedisClient        redis-client codec))
+   codec))
 

@@ -8,9 +8,13 @@ An idiomatic Clojure Redis client wrapping the Java client [Lettuce][].
 
 Or pick up only the ones you need:
 
-* [celtuce-core][]: Main module with all the core functionalities (required).
+* [celtuce-core][]: Main module with all the core functionalities (required)
 
   [![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
+
+* [celtuce-pool][]: Provides pooling for connections
+
+  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-pool.svg)](https://clojars.org/celtuce-pool)
 
 * [celtuce-manifold][]: Implementation of asynchronous commands based on [Manifold][]
 
@@ -128,6 +132,7 @@ lein modules do clean, install, test
 
 [modules]: https://github.com/lerouxrgd/celtuce/tree/master/modules
 [celtuce-core]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-core
+[celtuce-pool]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-pool
 [celtuce-manifold]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-manifold
 [tests-connector]: https://github.com/lerouxrgd/celtuce/blob/master/test/celtuce/connector_test.clj
 

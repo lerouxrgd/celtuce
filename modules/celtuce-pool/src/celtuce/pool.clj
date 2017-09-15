@@ -11,7 +11,7 @@
    (org.apache.commons.pool2.impl GenericObjectPool GenericObjectPoolConfig)))
 
 (defprotocol ConnectionPool
-  ""
+  "Functions for using the connection pool"
   (borrow-conn [this])
   (return-conn [this conn])
   (close       [this]))
@@ -26,18 +26,19 @@
     (.close conn-pool)))
 
 (defn ^GenericObjectPoolConfig pool-config
-  ""
+  "Internal helper to build ^GenericObjectPoolConfig from a map"
   [{:keys [max-total max-idle min-idle]
     :or {max-total GenericObjectPoolConfig/DEFAULT_MAX_TOTAL
          max-idle  GenericObjectPoolConfig/DEFAULT_MAX_IDLE
          min-idle  GenericObjectPoolConfig/DEFAULT_MIN_IDLE}}]
   (doto (GenericObjectPoolConfig.)
     (.setMaxTotal max-total)
-    (.setMaxIdle  max-total)
+    (.setMaxIdle  max-idle)
     (.setMinIdle  min-idle)))
 
 (defn conn-pool
-  ""
+  "Create a ConnectionPoolImpl that wraps a ConnectionPoolSupport.
+  Takes a connector and a command function that will be called on pooled connections"
   ([connector cmds-fn]
    (conn-pool connector cmds-fn {}))
   ([{:keys [redis-client stateful-conn codec] :as connector} cmds-fn options]
@@ -61,7 +62,8 @@
     cmds-fn)))
 
 (defmacro with-conn-pool
-  ""
+  "Takes a ConnectionPool coon-pool and a cmds-name symbol that will be bound to
+  the command function of the pooled called on a borrowed connection"
   [conn-pool cmds-name & body]
   `(let [conn# (borrow-conn ~conn-pool)
          ~cmds-name ((:cmds-fn ~conn-pool)

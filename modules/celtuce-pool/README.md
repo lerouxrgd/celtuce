@@ -33,7 +33,7 @@ Pooling connections is particularly useful for transactions or long running time
 (conn/shutdown connector)
 ```
 
-Note that `pool-conn` can take an optional pool configuration:
+Note that `conn-pool` can take an optional pool configuration:
 
 ```clj
 (pool/conn-pool connector conn/commands-sync

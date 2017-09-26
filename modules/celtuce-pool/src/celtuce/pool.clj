@@ -62,7 +62,7 @@
     cmds-fn)))
 
 (defmacro with-conn-pool
-  "Takes a ConnectionPool coon-pool and a cmds-name symbol that will be bound to
+  "Takes a ConnectionPool `coon-pool` and a `cmds-name` symbol that will be bound to
   the command function of the pool called on a borrowed connection"
   [conn-pool cmds-name & body]
   `(let [conn# (borrow-conn ~conn-pool)
@@ -71,3 +71,12 @@
      (try
        ~@body
        (finally (return-conn ~conn-pool conn#)))))
+
+(defmacro with-conn-pool*
+  "Like with-conn-pool but also binds the pooled connection to `conn-name`.
+  User is responsible for returning it to the pool within `body`"
+  [conn-pool cmds-name conn-name & body]
+  `(let [~conn-name (borrow-conn ~conn-pool)
+         ~cmds-name ((:cmds-fn ~conn-pool)
+                     (assoc (:connector ~conn-pool) :stateful-conn ~conn-name))]
+     ~@body))

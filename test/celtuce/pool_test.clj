@@ -42,4 +42,19 @@
                     (pool/return-conn conn-pool c)
                     res)))]
       (is (= ["OK" "OK" 3 4] @res))
+      (pool/close conn-pool)))
+
+  (testing "async pooled transaction with manifold"
+    (let [conn-pool (pool/conn-pool redis-conn commands-manifold)
+          res (pool/with-conn-pool* conn-pool cmds c
+                (d/chain (redis/multi cmds)
+                         (redis/set   cmds :e 5)
+                         (redis/set   cmds :f 6)
+                         (redis/get   cmds :e)
+                         (redis/get   cmds :f)
+                         (fn [_] (redis/exec cmds))
+                         (fn [res]
+                           (pool/return-conn conn-pool c)
+                           res)) )]
+      (is (= ["OK" "OK" 5 6] @res))
       (pool/close conn-pool))))

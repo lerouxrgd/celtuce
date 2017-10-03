@@ -77,6 +77,12 @@ Note that `conn-pool` can take an optional pool configuration:
   {:max-total 8, :max-idle 8, :min-idle 0})
 ```
 
+
+```clj
+(pool/conn-pool connector celtuce-manifold/commands-manifold
+  {:max-total 8, :max-idle 8, :min-idle 0})
+```
+
 ## License
 
 * [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)

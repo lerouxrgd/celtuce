@@ -438,12 +438,18 @@
 
 (defprotocol TransactionalCommands
   "Redis Transactional Commands"
-  (discard [this]      "Discard all commands issued after MULTI")
-  (exec    [this]      "Execute all commands issued after MULTI")
-  (multi   [this]      "Mark the start of a transaction block")
-  (watch   [this key]  "Watch key to determine execution of a transaction")
-  (mwatch  [this keys] "Watch keys to determine execution of a transaction")
-  (unwatch [this]      "Forget about all watched keys"))
+  (discard [this]
+           "Discard all commands issued after MULTI")
+  (exec    [this]
+           "Execute all commands issued after MULTI")
+  (multi   [this]
+           "Mark the start of a transaction block")
+  (watch   [this key]
+           "Watch key to determine execution of a transaction")
+  (mwatch  [this keys]
+           "Watch keys to determine execution of a transaction")
+  (unwatch [this]
+           "Forget about all watched keys"))
 
 (defprotocol PubSubCommands
   "Redis PubSub Commands"

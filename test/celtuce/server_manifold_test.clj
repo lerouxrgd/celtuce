@@ -216,12 +216,9 @@
     @(redis/mrpush *cmds* "bl" [1 2 3])
     (is (= ["bl" 1] @(redis/blpop *cmds* 1 ["bl"])))
     (is (= ["bl" 3] @(redis/brpop *cmds* 1 ["bl"])))
-
     @(redis/del *cmds* "bl")
-    (is (nil? @(redis/blpop *cmds* 1 ["bl"]))
-        "pop on empty list should return nil, not throw NPE")
-    (is (nil? @(redis/brpop *cmds* 1 ["bl"]))
-        "pop on empty list should return nil, not throw NPE")))
+    (is (nil? @(redis/blpop *cmds* 1 ["bl"])))
+    (is (nil? @(redis/brpop *cmds* 1 ["bl"])))))
 
 (deftest set-commands-test
 

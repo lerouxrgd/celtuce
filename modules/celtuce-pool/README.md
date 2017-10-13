@@ -30,7 +30,7 @@ Pooling connections is particularly useful for transactions or long running time
   (redis/set   cmds :b 2)
   (redis/get   cmds :a)
   (redis/get   cmds :b)
-  (redis/exec cmds))
+  (redis/exec  cmds))
 
 ;; When you are done using the connection pool
 (pool/close sync-conn-pool)
@@ -56,12 +56,13 @@ Pooling connections is particularly useful for transactions or long running time
 ;; and binds the resulting commands to cmds
 (let [result (pool/with-conn-pool* async-conn-pool cmds c
                (d/chain (redis/multi cmds)
-                 (redis/set   cmds :a 1)
-                 (redis/set   cmds :b 2)
-                 (redis/get   cmds :a)
-                 (redis/get   cmds :b)
+                 (redis/set cmds :a 1)
+                 (redis/set cmds :b 2)
+                 (redis/get cmds :a)
+                 (redis/get cmds :b)
                  (fn [_] (redis/exec cmds))
-                 (fn [res] (pool/return-conn async-conn-pool c) res)) )] (= ["OK" "OK" 1 2] @result))
+                 (fn [res] (pool/return-conn async-conn-pool c) res)))]
+  (= ["OK" "OK" 1 2] @result))
 
   ;; When you are done using the connection pool
 (pool/close async-conn-pool)

@@ -193,10 +193,12 @@
   ListCommands
   (blpop [this ^long sec ks]
     (let [res (.blpop this sec ^objects (into-array Object ks))]
-      [(.key res) (.value res)]))
+      (when res
+        [(.key res) (.value res)])))
   (brpop [this ^long sec ks]
     (let [res (.brpop this sec ^objects (into-array Object ks))]
-      [(.key res) (.value res)]))
+      (when res
+        [(.key res) (.value res)])))
   (brpoplpush [this ^long sec s d]
     (.brpoplpush this sec s d))
   (lindex [this k ^long idx]

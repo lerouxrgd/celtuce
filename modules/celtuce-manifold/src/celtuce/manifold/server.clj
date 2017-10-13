@@ -201,10 +201,10 @@
   ListCommands
   (blpop [this ^long sec ks]
     (d/chain (d/->deferred (.blpop this sec ^objects (into-array Object ks)))
-             (fn [^KeyValue res] [(.key res) (.value res)])))
+             (fn [^KeyValue res] (when res [(.key res) (.value res)]))))
   (brpop [this ^long sec ks]
     (d/chain (d/->deferred (.brpop this sec ^objects (into-array Object ks)))
-             (fn [^KeyValue res] [(.key res) (.value res)])))
+             (fn [^KeyValue res] (when res [(.key res) (.value res)]))))
   (brpoplpush [this ^long sec s d]
     (d/->deferred (.brpoplpush this sec s d)))
   (lindex [this k ^long idx]

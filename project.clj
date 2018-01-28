@@ -1,5 +1,5 @@
-(def celtuce-version "0.2.3")
-(def clj-version "1.8.0")
+(def celtuce-version "0.3.0")
+(def clj-version "1.9.0")
 (defproject celtuce celtuce-version
   :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
   :url "https://github.com/lerouxrgd/celtuce"

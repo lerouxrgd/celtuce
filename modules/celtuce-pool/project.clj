@@ -4,5 +4,5 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]
                  [celtuce-core ~celtuce-version]
-                 [org.apache.commons/commons-pool2 "2.4.2"]]
+                 [org.apache.commons/commons-pool2 "2.5.0"]]
   :global-vars {*warn-on-reflection* true})

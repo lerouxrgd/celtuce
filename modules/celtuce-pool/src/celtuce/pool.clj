@@ -1,13 +1,13 @@
 (ns celtuce.pool
   (:import
    (java.util.function Supplier)
-   (com.lambdaworks.redis RedisClient)
-   (com.lambdaworks.redis.cluster RedisClusterClient)
-   (com.lambdaworks.redis.codec RedisCodec)
-   (com.lambdaworks.redis.api StatefulRedisConnection)
-   (com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection)
-   (com.lambdaworks.redis.pubsub StatefulRedisPubSubConnection)   
-   (com.lambdaworks.redis.support ConnectionPoolSupport)
+   (io.lettuce.core RedisClient)
+   (io.lettuce.core.cluster RedisClusterClient)
+   (io.lettuce.core.codec RedisCodec)
+   (io.lettuce.core.api StatefulRedisConnection)
+   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+   (io.lettuce.core.pubsub StatefulRedisPubSubConnection)   
+   (io.lettuce.core.support ConnectionPoolSupport)
    (org.apache.commons.pool2.impl GenericObjectPool GenericObjectPoolConfig)))
 
 (defprotocol ConnectionPool

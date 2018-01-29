@@ -1,6 +1,6 @@
 (ns celtuce.args.set
   (:import 
-   (com.lambdaworks.redis SetArgs)))
+   (io.lettuce.core SetArgs)))
 
 (defn set-args [& {ex :ex px :px nx :nx xx :xx}]
   (cond-> (SetArgs.)

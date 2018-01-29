@@ -1,6 +1,6 @@
 (ns celtuce.args.zset
   (:import 
-   (com.lambdaworks.redis ZAddArgs ZAddArgs$Builder ZStoreArgs)))
+   (io.lettuce.core ZAddArgs ZAddArgs$Builder ZStoreArgs)))
 
 (defn ^ZAddArgs zadd-args [opt]
   (case opt

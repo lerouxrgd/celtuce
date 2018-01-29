@@ -7,8 +7,8 @@
    [celtuce.args.geo :refer [->unit]]
    [manifold.deferred :as d])
   (:import 
-   (com.lambdaworks.redis.cluster.api.async RedisAdvancedClusterAsyncCommands)
-   (com.lambdaworks.redis 
+   (io.lettuce.core.cluster.api.async RedisAdvancedClusterAsyncCommands)
+   (io.lettuce.core 
     ScanCursor ScriptOutputType KeyValue
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
     ZStoreArgs ZAddArgs ScoredValue

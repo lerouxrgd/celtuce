@@ -1,6 +1,6 @@
 (ns celtuce.args.sort
   (:import
-   (com.lambdaworks.redis SortArgs)))
+   (io.lettuce.core SortArgs)))
 
 (defn sort-args 
   [& {by :by [offset count :as limit] :limit get :get 

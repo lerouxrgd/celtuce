@@ -6,8 +6,8 @@
    [celtuce.args.scripting :refer [output-type]]
    [celtuce.args.geo :refer [->unit]])
   (:import 
-   (com.lambdaworks.redis.cluster.api.sync RedisAdvancedClusterCommands)
-   (com.lambdaworks.redis 
+   (io.lettuce.core.cluster.api.sync RedisAdvancedClusterCommands)
+   (io.lettuce.core 
     ScanCursor ScriptOutputType
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
     ZStoreArgs ZAddArgs ScoredValue

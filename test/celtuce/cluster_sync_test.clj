@@ -315,7 +315,7 @@
         (is (= sha (redis/digest  *cmds* script)))
         (is (= 10  (redis/evalsha *cmds* sha :integer [])))
         (redis/script-flush *cmds*)
-        (is (thrown? com.lambdaworks.redis.RedisCommandExecutionException
+        (is (thrown? io.lettuce.core.RedisCommandExecutionException
                      (redis/evalsha *cmds* sha :integer [])))))))
 
 (deftest hll-commands-test

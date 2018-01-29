@@ -5,18 +5,18 @@
    [celtuce.commands :as cmds])
   (:import 
    (java.util.concurrent TimeUnit)
-   (com.lambdaworks.redis
+   (io.lettuce.core
     RedisClient
     ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
     SocketOptions SslOptions)
-   (com.lambdaworks.redis.cluster
+   (io.lettuce.core.cluster
     ClusterClientOptions ClusterClientOptions$Builder
     ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-   (com.lambdaworks.redis.codec RedisCodec)
-   (com.lambdaworks.redis.api StatefulRedisConnection)
-   (com.lambdaworks.redis.cluster RedisClusterClient)
-   (com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection)
-   (com.lambdaworks.redis.pubsub StatefulRedisPubSubConnection RedisPubSubListener)))
+   (io.lettuce.core.codec RedisCodec)
+   (io.lettuce.core.api StatefulRedisConnection)
+   (io.lettuce.core.cluster RedisClusterClient)
+   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+   (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)))
 
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"

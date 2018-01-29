@@ -4,9 +4,9 @@
   (:import
    (celtuce.connector
     RedisServer RedisCluster RedisPubSub)
-   (com.lambdaworks.redis.api StatefulRedisConnection)
-   (com.lambdaworks.redis.cluster.api StatefulRedisClusterConnection)
-   (com.lambdaworks.redis.pubsub StatefulRedisPubSubConnection)))
+   (io.lettuce.core.api StatefulRedisConnection)
+   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+   (io.lettuce.core.pubsub StatefulRedisPubSubConnection)))
 
 (defprotocol CommandsManifold
   "Adds support for manifold based asynchronous commands"

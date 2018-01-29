@@ -1,6 +1,6 @@
 (ns celtuce.args.geo
   (:import 
-   (com.lambdaworks.redis
+   (io.lettuce.core
     GeoArgs GeoArgs$Unit GeoArgs$Sort GeoRadiusStoreArgs)))
 
 (defn ^GeoArgs$Unit ->unit [u]

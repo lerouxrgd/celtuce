@@ -1,3 +1,4 @@
+(load-file "../../.deps-versions.clj")
 (defproject celtuce-core celtuce-version
   :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
   :url "https://github.com/lerouxrgd/celtuce"

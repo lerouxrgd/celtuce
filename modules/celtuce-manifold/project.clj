@@ -1,3 +1,4 @@
+(load-file "../../.deps-versions.clj")
 (defproject celtuce-manifold celtuce-version
   :url "https://github.com/lerouxrgd/celtuce"
   :license {:name "Apache License 2.0"

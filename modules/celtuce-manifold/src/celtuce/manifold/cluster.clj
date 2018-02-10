@@ -9,7 +9,7 @@
   (:import 
    (io.lettuce.core.cluster.api.async RedisAdvancedClusterAsyncCommands)
    (io.lettuce.core 
-    ScanCursor ScriptOutputType KeyValue
+    Value KeyValue ScanCursor ScriptOutputType KeyValue
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
     ZStoreArgs ZAddArgs ScoredValue
     GeoArgs GeoRadiusStoreArgs GeoWithin GeoCoordinates)
@@ -40,6 +40,7 @@
     (d/->deferred (.hlen this k)))
   (hmget [this k fs]
     (d/chain (d/->deferred (.hmget this k ^objects (into-array Object fs)))
+             #(map (fn [^KeyValue kv] (.getValueOrElse kv nil)) %)
              #(into (empty fs) %)))
   (hmset [this k ^Map m]
     (d/->deferred (.hmset this k m)))
@@ -175,6 +176,7 @@
     (d/->deferred (.incrbyfloat this k a)))
   (mget [this ks]
     (d/chain (d/->deferred (.mget this (into-array Object ks))) 
+             #(map (fn [^KeyValue kv] (.getValueOrElse kv nil)) %)
              #(into (empty ks) %)))
   (mset [this m]
     (d/->deferred (.mset this m)))
@@ -201,10 +203,12 @@
   ListCommands
   (blpop [this ^long sec ks]
     (d/chain (d/->deferred (.blpop this sec ^objects (into-array Object ks)))
-             (fn [^KeyValue res] (when res [(.key res) (.value res)]))))
+             (fn [^KeyValue res]
+               (when res [(.getKey res) (.getValue res)]))))
   (brpop [this ^long sec ks]
     (d/chain (d/->deferred (.brpop this sec ^objects (into-array Object ks)))
-             (fn [^KeyValue res] (when res [(.key res) (.value res)]))))
+             (fn [^KeyValue res]
+               (when res [(.getKey res) (.getValue res)]))))
   (brpoplpush [this ^long sec s d]
     (d/->deferred (.brpoplpush this sec s d)))
   (lindex [this k ^long idx]
@@ -218,7 +222,7 @@
   (lpush [this k v]
     (d/->deferred (.lpush this k ^objects (into-array Object [v]))))
   (lpushx [this k v]
-    (d/->deferred (.lpushx this k v)))
+    (d/->deferred (.lpushx this k ^objects (into-array Object [v]))))
   (lrange [this k ^long s ^long e]
     (d/chain (d/->deferred (.lrange this k s e))
              #(into [] %)))
@@ -230,8 +234,12 @@
     (d/->deferred (.ltrim this k s e)))
   (mrpush [this k vs]
     (d/->deferred (.rpush this k ^objects (into-array Object vs))))
+  (mrpushx [this k vs]
+    (d/->deferred (.rpushx this k ^objects (into-array Object vs))))
   (mlpush [this k vs]
     (d/->deferred (.lpush this k ^objects (into-array Object vs))))
+  (mlpushx [this k vs]
+    (d/->deferred (.lpushx this k ^objects (into-array Object vs))))
   (rpop [this k]
     (d/->deferred (.rpop this k)))
   (rpoplpush [this s d]
@@ -239,7 +247,7 @@
   (rpush [this k v]
     (d/->deferred (.rpush this k ^objects (into-array Object [v]))))
   (rpushx [this k v]
-    (d/->deferred (.rpushx this k v)))
+    (d/->deferred (.rpushx this k ^objects (into-array Object [v]))))
 
   SetCommands
   (msadd [this k ms]
@@ -325,7 +333,7 @@
              #(into [] %)))
   (zrange-withscores [this k ^long s ^long e]
     (d/chain (d/->deferred (.zrangeWithScores this k s e))
-             #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+             #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
              #(into [] %)))
   (zrangebyscore
     ([this k ^double min ^double max]
@@ -337,11 +345,11 @@
   (zrangebyscore-withscores
     ([this k ^double min ^double max]
      (d/chain (d/->deferred (.zrangebyscoreWithScores this k min max))
-              #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+              #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
               #(into [] %)))
     ([this k ^Double min ^Double max ^Long o ^Long c]
      (d/chain (d/->deferred (.zrangebyscoreWithScores this k min max o c))
-              #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+              #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
               #(into [] %))))
   (zrank [this k m]
     (d/->deferred (.zrank this k m)))
@@ -358,7 +366,7 @@
              #(into [] %)))
   (zrevrange-withscores [this k ^long s ^long e]
     (d/chain (d/->deferred (.zrevrangeWithScores this k s e))
-             #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+             #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
              #(into [] %)))
   (zrevrangebyscore
     ([this k ^double min ^double max]
@@ -370,11 +378,11 @@
   (zrevrangebyscore-withscores
     ([this k ^double min ^double max]
      (d/chain (d/->deferred (.zrevrangebyscoreWithScores this k min max))
-             #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+             #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
              #(into [] %)))
     ([this k ^Double min ^Double max ^Long o ^Long c]
      (d/chain (d/->deferred (.zrevrangebyscoreWithScores this k min max o c))
-             #(map (fn [^ScoredValue sv] [(.score sv) (.value sv)]) %)
+             #(map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]) %)
              #(into [] %))))
   (zrevrank [this k m]
     (d/->deferred (.zrevrank this k m)))
@@ -547,9 +555,10 @@
       (.geoadd this key ^objects (into-array Object (mapcat identity lng-lat-members))))))
   (geohash [this key member]
     (d/chain (d/->deferred (.geohash this key ^objects (into-array Object [member])))
-             #(first %)))
+             #(.getValue ^Value (first %))))
   (mgeohash [this key members]
     (d/chain (d/->deferred (.geohash this key ^objects (into-array Object members)))
+             #(map (fn [^Value v] (.getValue v)) %)
              #(into [] %)))
   (georadius
     ([this key ^Double long ^Double lat ^Double dist unit]
@@ -563,13 +572,13 @@
                 #(map (fn [^GeoWithin g]
                         (if-not g
                           nil
-                          (cond-> {:member (.member g)}
-                            (.distance g) (assoc :distance (.distance g))
-                            (.geohash g) (assoc :geohash (.geohash g))
-                            (.coordinates g)
+                          (cond-> {:member (.getMember g)}
+                            (.getDistance g) (assoc :distance (.getDistance g))
+                            (.getGeohash g) (assoc :geohash (.getGeohash g))
+                            (.getCoordinates g)
                             (assoc :coordinates
-                                   {:x (.x ^GeoCoordinates (.coordinates g))
-                                    :y (.y ^GeoCoordinates (.coordinates g))}))))
+                                   {:x (.getX ^GeoCoordinates (.getCoordinates g))
+                                    :y (.getY ^GeoCoordinates (.getCoordinates g))}))))
                       %)
                 #(into [] %))
        GeoRadiusStoreArgs
@@ -589,13 +598,13 @@
                 #(map (fn [^GeoWithin g]
                         (if-not g
                           nil
-                          (cond-> {:member (.member g)}
-                            (.distance g) (assoc :distance (.distance g))
-                            (.geohash g) (assoc :geohash (.geohash g))
-                            (.coordinates g)
+                          (cond-> {:member (.getMember g)}
+                            (.getDistance g) (assoc :distance (.getDistance g))
+                            (.getGeohash g) (assoc :geohash (.getGeohash g))
+                            (.getCoordinates g)
                             (assoc :coordinates
-                                   {:x (.x ^GeoCoordinates (.coordinates g))
-                                    :y (.y ^GeoCoordinates (.coordinates g))}))))
+                                   {:x (.getX ^GeoCoordinates (.getCoordinates g))
+                                    :y (.getY ^GeoCoordinates (.getCoordinates g))}))))
                       %)
                 #(into [] %))
        GeoRadiusStoreArgs
@@ -606,13 +615,13 @@
   (geopos [this key member]
     (d/chain (d/->deferred (.geopos this key ^objects (into-array Object [member])))
              #(map (fn [^GeoCoordinates c]
-                     (if-not c nil {:x (.x c) :y (.y c)}))
+                     (if-not c nil {:x (.getX c) :y (.getY c)}))
                    %)
              #(first %)))
   (mgeopos [this key members]
     (d/chain (d/->deferred (.geopos this key ^objects (into-array Object members)))
              #(map (fn [^GeoCoordinates c]
-                     (if-not c nil {:x (.x c) :y (.y c)}))
+                     (if-not c nil {:x (.getX c) :y (.getY c)}))
                    %)
              #(into [] %)))
   (geodist [this key from to unit]

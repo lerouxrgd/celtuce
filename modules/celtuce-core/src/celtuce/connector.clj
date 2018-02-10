@@ -5,6 +5,8 @@
    [celtuce.commands :as cmds])
   (:import 
    (java.util.concurrent TimeUnit)
+   (java.time Duration)
+   (java.time.temporal ChronoUnit)
    (io.lettuce.core
     RedisClient
     ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
@@ -34,6 +36,27 @@
    :minutes      TimeUnit/MINUTES
    :hours        TimeUnit/HOURS
    :days         TimeUnit/DAYS})
+
+(def kw->cunit
+  {:nanoseconds  ChronoUnit/NANOS
+   :nanos        ChronoUnit/NANOS
+   :microseconds ChronoUnit/MICROS
+   :micros       ChronoUnit/MICROS
+   :milliseconds ChronoUnit/MILLIS
+   :millis       ChronoUnit/MILLIS
+   :seconds      ChronoUnit/SECONDS
+   :minutes      ChronoUnit/MINUTES
+   :hours        ChronoUnit/HOURS
+   :half-day     ChronoUnit/HALF_DAYS
+   :days         ChronoUnit/DAYS
+   :weeks        ChronoUnit/WEEKS
+   :months       ChronoUnit/MONTHS
+   :years        ChronoUnit/YEARS
+   :decades      ChronoUnit/DECADES
+   :centuries    ChronoUnit/CENTURIES
+   :millennia    ChronoUnit/MILLENNIA
+   :eras         ChronoUnit/ERAS
+   :forever      ChronoUnit/FOREVER})
 
 (def kw->dbehavior
   {:default          ClientOptions$DisconnectedBehavior/DEFAULT
@@ -68,13 +91,13 @@
     ;; provider setup
     (contains? opts :provider)
     (cond->
-      (= :open-ssl (:provider opts)) (.openSslProvider)
-      (= :jdk      (:provider opts)) (.jdkSslProvider))
+        (= :open-ssl (:provider opts)) (.openSslProvider)
+        (= :jdk      (:provider opts)) (.jdkSslProvider))
     ;; keystore setup
     (contains? opts :keystore)
     (cond->
-      (and (contains? (:keystore opts) :file)
-           (contains? (:keystore opts) :password)) 
+        (and (contains? (:keystore opts) :file)
+             (contains? (:keystore opts) :password)) 
       (.keystore (io/as-file (-> opts :keystore :file))
                  (chars      (-> opts :keystore :password)))
       (contains? (:keystore opts) :file)
@@ -88,8 +111,8 @@
     ;; truststore setup
     (contains? opts :truststore)
     (cond->
-      (and (contains? (:truststore opts) :file)
-           (contains? (:truststore opts) :password)) 
+        (and (contains? (:truststore opts) :file)
+             (contains? (:truststore opts) :password)) 
       (.truststore (io/as-file (-> opts :truststore :file))
                    (-> opts :truststore :password str))
       (contains? (:truststore opts) :file)
@@ -131,18 +154,19 @@
   used by b-cluster-client-options"
   [opts]
   (cond-> (ClusterTopologyRefreshOptions/builder)
-    (contains? opts :enable-periodic-refresh)
-    (.enablePeriodicRefresh (:enable-periodic-refresh opts))
-    (contains? opts :refresh-period)
-    (.refreshPeriod (-> opts :refresh-period :period)
-                    (-> opts :refresh-period :unit kw->tunit))
+    (and (contains? opts :enable-periodic-refresh)
+         (true? (:enable-periodic-refresh opts))
+         (contains? opts :refresh-period))
+    (.enablePeriodicRefresh 
+     (Duration/of (-> opts :refresh-period :period)
+                  (-> opts :refresh-period :unit kw->cunit)))
     (contains? opts :close-stale-connections)
     (.closeStaleConnections (:close-stale-connections opts))
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
     (contains? opts :enable-adaptive-refresh-trigger)
     (cond->
-      (= :all (:enable-adaptive-refresh-trigger opts))
+        (= :all (:enable-adaptive-refresh-trigger opts))
       (.enableAllAdaptiveRefreshTriggers)
       (set? (:enable-adaptive-refresh-trigger opts))
       (.enableAdaptiveRefreshTrigger
@@ -150,8 +174,9 @@
                    (->> opts :enable-adaptive-refresh-trigger (map kw->rtrigger)))))
     (contains? opts :adaptive-refresh-triggers-timeout)
     (.adaptiveRefreshTriggersTimeout
-     (-> opts :adaptive-refresh-triggers-timeout :timeout)
-     (-> opts :adaptive-refresh-triggers-timeout :unit kw->tunit))
+     (Duration/of
+      (-> opts :adaptive-refresh-triggers-timeout :timeout)
+      (-> opts :adaptive-refresh-triggers-timeout :unit kw->cunit)))
     (contains? opts :refresh-triggers-reconnect-attempts)
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))

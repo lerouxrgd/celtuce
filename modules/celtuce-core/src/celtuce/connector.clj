@@ -16,17 +16,19 @@
     ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
    (io.lettuce.core.codec RedisCodec)
    (io.lettuce.core.api StatefulRedisConnection)
+   (io.lettuce.core.dynamic RedisCommandFactory)
    (io.lettuce.core.cluster RedisClusterClient)
    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)))
 
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
-  (commands-sync  [this])
-  (flush-commands [this])
-  (set-options    [this options])
-  (reset          [this])
-  (shutdown       [this]))
+  (commands-sync    [this])
+  (commands-dynamic [this cmd-class])
+  (flush-commands   [this])
+  (set-options      [this options])
+  (reset            [this])
+  (shutdown         [this]))
 
 (def kw->tunit
   {:nanoseconds  TimeUnit/NANOSECONDS
@@ -203,11 +205,14 @@
      client-options
      ^StatefulRedisConnection stateful-conn
      conn-options
-     ^RedisCodec codec]
+     ^RedisCodec codec
+     ^RedisCommandFactory dynamic-factory]
   RedisConnector
   (commands-sync [this]
     (require '[celtuce.impl.server])
     (.sync stateful-conn))
+  (commands-dynamic [this cmd-class]
+    (.getCommands dynamic-factory cmd-class))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
   (reset [this] 
@@ -236,7 +241,8 @@
       :stateful-conn  stateful-conn
       :conn-options   {:auto-flush auto-flush
                        :timeout    conn-timeout
-                       :unit       conn-unit}})))
+                       :unit       conn-unit}
+      :dynamic-factory (RedisCommandFactory. stateful-conn)})))
 
 ;;
 ;; Redis Cluster
@@ -247,11 +253,14 @@
      client-options
      ^StatefulRedisClusterConnection stateful-conn
      conn-options
-     ^RedisCodec codec]
+     ^RedisCodec codec
+     ^RedisCommandFactory dynamic-factory]
   RedisConnector
   (commands-sync [this]
     (require '[celtuce.impl.cluster])
     (.sync stateful-conn))
+  (commands-dynamic [this cmd-class]
+    (.getCommands dynamic-factory cmd-class))
   (flush-commands [this] 
     (.flushCommands stateful-conn))
   (reset [this] 
@@ -281,7 +290,8 @@
       :stateful-conn  stateful-conn
       :conn-options   {:auto-flush auto-flush
                        :timeout    conn-timeout
-                       :unit       conn-unit}})))
+                       :unit       conn-unit}
+      :dynamic-factory (RedisCommandFactory. stateful-conn)})))
 
 ;;
 ;; Redis PubSub

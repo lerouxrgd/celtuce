@@ -3,7 +3,7 @@
   (:require 
    [celtuce.commands :refer :all])
   (:import 
-   (com.lambdaworks.redis.pubsub.api.sync RedisPubSubCommands)))
+   (io.lettuce.core.pubsub.api.sync RedisPubSubCommands)))
 
 (extend-type RedisPubSubCommands
   PubSubCommands

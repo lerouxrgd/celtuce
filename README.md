@@ -23,8 +23,7 @@ Or pick up only the ones you need:
 ### Redis Connectors
 
 Connectors are available for both Redis `Server` and `Cluster`.
-They are defined in `celtuce.connector` namespace of [celtuce-core][] module.
-
+They are defined in `celtuce.connector` namespace of `celtuce-core` module.
 
 ```clj
 (require '[celtuce.connector :as conn])
@@ -59,13 +58,13 @@ Note that you can find options default values in the [tests][tests-connector].
 
 ### Redis Commands
 
-All Redis commands are implemented using protocols in `celtuce.commands` namespace of [celtuce-core][] module.
+All Redis [commands][] are implemented using protocols in `celtuce.commands` namespace of `celtuce-core` module.
 
 ```clj
 (require '[celtuce.commands :as redis])
 ```
 
-**Sync**
+**Sync Commands**
 
 ```clj
 (def connector (conn/redis-server "redis://localhost:6379"))
@@ -77,7 +76,7 @@ All Redis commands are implemented using protocols in `celtuce.commands` namespa
 (conn/shutdown connector)
 ```
 
-**PubSub**
+**PubSub Commands**
 
 Redis prevents publishing and subscribing on the same connection.
 The following contrive example demonstrates pubsub usage with two connections.
@@ -111,15 +110,30 @@ The following contrive example demonstrates pubsub usage with two connections.
 (conn/shutdown conn-sub)
 ```
 
+**Dynamic Commands**
+
+Starting from Lettuce 5 it is now possible to define commands [dynamically][dynamic] by extending a `Commands` interface.
+Such commands are obtained as follows.
+
+```clj
+(conn/commands-dynamic connector some.interface.extending.Commands)
+```
+
+You can find basic examples in the tests.
+
 ## Tests
 
 To run unit tests you need to have both a redis server running on a `localhost:6379`,
 and a redis cluster running on `localhost:30001`.
 
-Then simply run:
+Then build artifacts and run tests:
 
 ```sh
-lein modules do clean, install, test
+(cd modules/celtuce-core/; lein clean; lein install)
+(cd modules/celtuce-pool/; lein clean; lein install)
+(cd modules/celtuce-manifold/; lein clean; lein install)
+
+lein test
 ```
 
 ## License
@@ -129,8 +143,10 @@ lein modules do clean, install, test
 [lettuce]: https://github.com/lettuce-io/lettuce-core
 [wiki-uri]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-URI-and-connection-details#uri-syntax
 [client-options]: https://github.com/lettuce-io/lettuce-core/wiki/Client-options
+[dynamic]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-Command-Interfaces
 
 [modules]: https://github.com/lerouxrgd/celtuce/tree/master/modules
+[commands]: https://github.com/lerouxrgd/celtuce/blob/master/modules/celtuce-core/src/celtuce/commands.clj
 [celtuce-core]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-core
 [celtuce-pool]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-pool
 [celtuce-manifold]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-manifold

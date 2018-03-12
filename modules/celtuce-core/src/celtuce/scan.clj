@@ -1,6 +1,6 @@
 (ns celtuce.scan
   (:import 
-   (com.lambdaworks.redis 
+   (io.lettuce.core 
     ScanArgs ScanCursor ScanIterator
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
     KeyValue ScoredValue)))
@@ -35,7 +35,7 @@
   ScoredValueScanCursor
   (scan-res [this] 
     (->> (.getValues this)
-         (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))
+         (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
          (into []))))
 
 (defn ^ScanCursor scan-cursor 
@@ -85,11 +85,11 @@
   ([cmds key]
    (->> (ScanIterator/hscan cmds key)
         (iterator-seq)
-        (map (fn [^KeyValue kv] [(.key kv) (.value kv)]))))
+        (map (fn [^KeyValue kv] [(.getKey kv) (.getValue kv)]))))
   ([cmds key args]
    (->> (ScanIterator/hscan cmds key ^ScanArgs args)
         (iterator-seq)
-        (map (fn [^KeyValue kv] [(.key kv) (.value kv)])))))
+        (map (fn [^KeyValue kv] [(.getKey kv) (.getValue kv)])))))
 
 (defn sscan-seq
   "Lazy SSCAN sequence, takes optional scan-args"
@@ -103,9 +103,9 @@
   ([cmds key]
    (->> (ScanIterator/zscan cmds key)
         (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.score sv) (.value sv)]))))
+        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))))
   ([cmds key args]
    (->> (ScanIterator/zscan cmds key)
         (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.score sv) (.value sv)])))))
+        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)])))))
 

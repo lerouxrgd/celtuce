@@ -1,6 +1,6 @@
 (ns celtuce.args.scripting
   (:import 
-   (com.lambdaworks.redis ScriptOutputType)))
+   (io.lettuce.core ScriptOutputType)))
 
 (defn ^ScriptOutputType output-type [t]
   (case t

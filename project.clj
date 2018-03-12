@@ -1,5 +1,4 @@
-(def celtuce-version "0.2.3")
-(def clj-version "1.8.0")
+(load-file ".deps-versions.clj")
 (defproject celtuce celtuce-version
   :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
   :url "https://github.com/lerouxrgd/celtuce"
@@ -9,11 +8,4 @@
                  [celtuce-core ~celtuce-version]
                  [celtuce-pool ~celtuce-version]
                  [celtuce-manifold ~celtuce-version]]
-  :profiles {:dev
-             {:plugins [[lein-modules "0.3.11"]]}}
-  :modules {:dirs ["modules/celtuce-core"
-                   "modules/celtuce-pool"
-                   "modules/celtuce-manifold"
-                   "."]
-            :subprocess nil}
   :global-vars {*warn-on-reflection* true})

@@ -3,7 +3,7 @@
    [carbonite.api :refer [default-registry]]
    [taoensso.nippy :as nippy])
   (:import 
-   (com.lambdaworks.redis.codec 
+   (io.lettuce.core.codec 
     RedisCodec Utf8StringCodec ByteArrayCodec 
     CompressionCodec CompressionCodec$CompressionType)
    (java.io ByteArrayOutputStream ByteArrayInputStream)

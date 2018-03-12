@@ -3,7 +3,7 @@
    [celtuce.commands :refer :all]
    [manifold.deferred :as d])
   (:import 
-   (com.lambdaworks.redis.pubsub.api.async RedisPubSubAsyncCommands)))
+   (io.lettuce.core.pubsub.api.async RedisPubSubAsyncCommands)))
 
 (extend-type RedisPubSubAsyncCommands
   PubSubCommands

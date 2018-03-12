@@ -1,6 +1,6 @@
 (ns celtuce.args.kill
   (:import 
-   (com.lambdaworks.redis KillArgs KillArgs$Builder)))
+   (io.lettuce.core KillArgs KillArgs$Builder)))
 
 (defn ^KillArgs kill-args [& {skipme :skipme addr :addr id :id type :type}]
   {:pre [(or (nil? type)

@@ -1,6 +1,6 @@
 (ns celtuce.args.bitfield
   (:import 
-   (com.lambdaworks.redis
+   (io.lettuce.core
     BitFieldArgs
     BitFieldArgs$BitFieldType
     BitFieldArgs$OverflowType)))

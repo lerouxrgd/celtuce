@@ -198,6 +198,8 @@
               "Prepend multiple values to a list")
   (lpushx     [this key val]
               "Prepend a value to a list, only if the list exists")
+  (mlpushx    [this key vals]
+              "Prepend multiple values, only if the list exists")
   (lrange     [this key start end]
               "Get a range of elements from a list")
   (lrem       [this key count val]
@@ -215,7 +217,9 @@
   (mrpush     [this key vals]
               "Append multiple values to a list")
   (rpushx     [this key val]
-              "Append a value to a list, only if the list exists"))
+              "Append a value to a list, only if the list exists")
+  (mrpushx    [this key vals]
+              "Append multiple values to a list, only if the list exists"))
 
 (defprotocol SetCommands
   "Redis Set Commands"

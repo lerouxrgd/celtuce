@@ -129,9 +129,9 @@ and a redis cluster running on `localhost:30001`.
 Then build artifacts and run tests:
 
 ```sh
-(cd modules/celtuce-core/; lein clean; lein install)
-(cd modules/celtuce-pool/; lein clean; lein install)
-(cd modules/celtuce-manifold/; lein clean; lein install)
+(cd modules/celtuce-core/; lein do clean, install)
+(cd modules/celtuce-pool/; lein do clean, install)
+(cd modules/celtuce-manifold/; lein do clean, install)
 
 lein test
 ```

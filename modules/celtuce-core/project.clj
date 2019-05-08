@@ -5,8 +5,8 @@
   :license {:name "Apache License 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]
-                 [io.lettuce/lettuce-core "5.0.2.RELEASE"]
-                 [potemkin "0.4.4"]
+                 [io.lettuce/lettuce-core "5.1.6.RELEASE"]
+                 [potemkin "0.4.5"]
                  [com.taoensso/nippy "2.14.0"]
                  [com.twitter/carbonite "1.5.0"]]
   :global-vars {*warn-on-reflection* true})

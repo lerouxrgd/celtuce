@@ -324,7 +324,7 @@
                   "Remove all the scripts from the script cache")
   (script-kill    [this]
                   "Kill the script currently in execution")
-  (scirpt-load    [this script]
+  (script-load    [this script]
                   "Load the specified Lua script into the script cache")
   (digest         [this script]
                   "Create a SHA1 digest from a Lua script"))

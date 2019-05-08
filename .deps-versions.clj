@@ -1,2 +1,2 @@
-(def celtuce-version "0.3.1")
-(def clj-version "1.9.0")
+(def celtuce-version "0.3.2")
+(def clj-version "1.10.0")

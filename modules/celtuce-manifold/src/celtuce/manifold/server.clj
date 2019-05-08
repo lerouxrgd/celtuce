@@ -438,7 +438,7 @@
     (d/->deferred (.scriptFlush this)))
   (script-kill [this]
     (d/->deferred (.scriptKill this)))
-  (scirpt-load [this script]
+  (script-load [this script]
     (d/->deferred (.scriptLoad this script)))
   (digest [this script]
     (.digest this script))

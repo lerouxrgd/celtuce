@@ -410,7 +410,7 @@
     (.scriptFlush this))
   (script-kill [this]
     (.scriptKill this))
-  (scirpt-load [this script]
+  (script-load [this script]
     (.scriptLoad this script))
   (digest [this script]
     (.digest this script))

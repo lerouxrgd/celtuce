@@ -11,14 +11,17 @@ Or pick up only the ones you need:
 * [celtuce-core][]: Main module with all the core functionalities (required)
 
   [![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
+  [![cljdoc badge](https://cljdoc.org/badge/celtuce-core/celtuce-core)](https://cljdoc.org/d/celtuce-core/celtuce-core/CURRENT)
 
 * [celtuce-pool][]: Provides pooling for connections
 
   [![Clojars Project](https://img.shields.io/clojars/v/celtuce-pool.svg)](https://clojars.org/celtuce-pool)
+  [![cljdoc badge](https://cljdoc.org/badge/celtuce-pool/celtuce-pool)](https://cljdoc.org/d/celtuce-pool/celtuce-pool/CURRENT)
 
 * [celtuce-manifold][]: Implementation of asynchronous commands based on [Manifold][]
 
   [![Clojars Project](https://img.shields.io/clojars/v/celtuce-manifold.svg)](https://clojars.org/celtuce-manifold)
+  [![cljdoc badge](https://cljdoc.org/badge/celtuce-manifold/celtuce-manifold)](https://cljdoc.org/d/celtuce-manifold/celtuce-manifold/CURRENT)
 
 ### Redis Connectors
 

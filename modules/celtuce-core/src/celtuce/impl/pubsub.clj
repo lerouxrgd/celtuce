@@ -1,8 +1,8 @@
 (ns celtuce.impl.pubsub
   (:refer-clojure :exclude [get set keys sort type eval time])
-  (:require 
+  (:require
    [celtuce.commands :refer :all])
-  (:import 
+  (:import
    (io.lettuce.core.pubsub.api.sync RedisPubSubCommands)))
 
 (extend-type RedisPubSubCommands
@@ -34,4 +34,3 @@
     (into {} (.pubsubNumsub this ^objects (into-array Object [channel]))))
   (pubsub-numpat [this]
     (.pubsubNumpat this)))
-

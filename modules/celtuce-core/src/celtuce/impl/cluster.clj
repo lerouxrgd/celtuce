@@ -1,13 +1,13 @@
 (ns celtuce.impl.cluster
   (:refer-clojure :exclude [get set keys sort type eval time])
-  (:require 
+  (:require
    [celtuce.commands :refer :all]
    [celtuce.args.zset :refer [zadd-args]]
    [celtuce.args.scripting :refer [output-type]]
    [celtuce.args.geo :refer [->unit]])
-  (:import 
+  (:import
    (io.lettuce.core.cluster.api.sync RedisAdvancedClusterCommands)
-   (io.lettuce.core 
+   (io.lettuce.core
     Value KeyValue ScanCursor ScriptOutputType
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
     ZStoreArgs ZAddArgs ScoredValue
@@ -41,7 +41,7 @@
          (into (empty fs))))
   (hmset [this k ^Map m]
     (.hmset this k m))
-  (hscan 
+  (hscan
     ([this k]
      (.hscan this k))
     ([this k ^ScanCursor c]
@@ -104,7 +104,7 @@
     (.renamenx this k1 k2))
   (restore [this k ^long ttl ^bytes v]
     (.restore this k ttl v))
-  (scan 
+  (scan
     ([this]
      (.scan this))
     ([this ^ScanCursor c]
@@ -113,7 +113,7 @@
      (.scan this c args)))
   (sort
     ([this k]
-     (.sort this k)) 
+     (.sort this k))
     ([this k ^SortArgs args]
      (.sort this k args)))
   (sort-store [this k ^SortArgs args d]
@@ -130,7 +130,7 @@
   StringsCommands
   (append [this k v]
     (.append this k v))
-  (bitcount 
+  (bitcount
     ([this k]
      (.bitcount this k))
     ([this k ^long s ^long e]
@@ -145,9 +145,9 @@
     (.bitopOr this d ^objects (into-array Object ks)))
   (bitop-xor [this d ks]
     (.bitopXor this d ^objects (into-array Object ks)))
-  (bitpos 
+  (bitpos
     ([this k ^Boolean state]
-     (.bitpos this k state)) 
+     (.bitpos this k state))
     ([this k ^Boolean state ^Long s ^Long e]
      (.bitpos this k state s e)))
   (decr [this k]
@@ -176,7 +176,7 @@
     (.mset this m))
   (msetnx [this m]
     (.msetnx this m))
-  (set 
+  (set
     ([this k v]
      (.set this k v))
     ([this k v ^SetArgs args]
@@ -265,14 +265,14 @@
     (.smove this k d m))
   (smembers [this k]
     (into #{} (.smembers this k)))
-  (spop 
+  (spop
     ([this k]
-     (.spop this k)) 
+     (.spop this k))
     ([this k ^long c]
      (into #{} (.spop this k c))))
-  (srandmember 
+  (srandmember
     ([this k]
-     (.srandmember this k)) 
+     (.srandmember this k))
     ([this k ^long c]
      (into #{} (.srandmember this k c))))
   (srem [this k m]
@@ -281,13 +281,13 @@
     (into #{} (.sunion this ^objects (into-array Object ks))))
   (sunionstore [this d ks]
     (.sunionstore this d ^objects (into-array Object ks)))
-  (sscan 
+  (sscan
     ([this k]
      (.sscan this k))
     ([this k ^ScanCursor c]
      (.sscan this k c))
-    ([this k ^ScanCursor c args]
-     (.sscan this k c)))
+    ([this k ^ScanCursor c ^ScanArgs args]
+     (.sscan this k c args)))
 
   SortedSetCommands
   (zadd
@@ -316,7 +316,7 @@
   (zrange [this k ^long s ^long e]
     (into [] (.zrange this k s e)))
   (zrange-withscores [this k ^long s ^long e]
-    (->> (.zrangeWithScores this k s e) 
+    (->> (.zrangeWithScores this k s e)
          (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
          (into [])))
   (zrangebyscore
@@ -330,7 +330,7 @@
           (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
           (into [])))
     ([this k ^Double min ^Double max ^Long o ^Long c]
-     (->> (.zrangebyscoreWithScores this k min max o c) 
+     (->> (.zrangebyscoreWithScores this k min max o c)
           (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
           (into []))))
   (zrank [this k m]
@@ -383,25 +383,25 @@
     (.zlexcount this k min max))
   (zremrangebylex [this k ^String min ^String max]
     (.zremrangebylex this k min max))
-  (zrangebylex 
+  (zrangebylex
     ([this k ^String min ^String max]
      (into [] (.zrangebylex this k min max)))
     ([this k ^String min ^String max ^Long o ^Long c]
      (into [] (.zrangebylex this k min max o c))))
 
   ScriptingCommands
-  (eval 
+  (eval
     ([this ^String script t ks]
      (.eval this script (output-type t) ^objects (into-array Object ks)))
     ([this ^String script t ks vs]
-     (.eval this script (output-type t) 
+     (.eval this script (output-type t)
             ^objects (into-array Object ks)
             ^objects (into-array Object vs))))
-  (evalsha 
+  (evalsha
     ([this ^String digest t ks]
      (.evalsha this digest (output-type t) ^objects (into-array Object ks)))
     ([this ^String digest t ks vs]
-     (.evalsha this digest (output-type t) 
+     (.evalsha this digest (output-type t)
                ^objects (into-array Object ks)
                ^objects (into-array Object vs))))
   (script-exists? [this digests]
@@ -435,7 +435,7 @@
   (command [this]
     (into [] (.command this)))
   (command-info [this commands]
-    (into (empty commands) 
+    (into (empty commands)
           (.commandInfo this ^"[Ljava.lang.String;" (into-array String commands))))
   (command-count [this]
     (.commandCount this))
@@ -473,9 +473,9 @@
     (.flushdb this))
   (flushdb-async [this]
     (.flushdbAsync this))
-  (info 
+  (info
     ([this]
-     (.info this)) 
+     (.info this))
     ([this ^String section]
      (.info this section)))
   (lastsave [this]
@@ -488,9 +488,9 @@
     (.slaveof this host port))
   (slaveof-no-one [this]
     (.slaveofNoOne this))
-  (slowlog-get 
+  (slowlog-get
     ([this]
-     (into [] (.slowlogGet this))) 
+     (into [] (.slowlogGet this)))
     ([this ^Integer count]
      (into [] (.slowlogGet this count))))
   (slowlog-len [this]
@@ -548,7 +548,7 @@
             (into []))
        GeoRadiusStoreArgs
        (.georadius this key long lat dist (->unit unit) ^GeoRadiusStoreArgs args)
-       (throw (ex-info "Invalid Args" {:args (class args) 
+       (throw (ex-info "Invalid Args" {:args (class args)
                                        :valids #{GeoArgs GeoRadiusStoreArgs}})))))
   (georadiusbymember
     ([this key member ^Double dist unit]
@@ -570,7 +570,7 @@
             (into []))
        GeoRadiusStoreArgs
        (.georadiusbymember this key member dist (->unit unit) ^GeoRadiusStoreArgs args)
-       (throw (ex-info "Invalid Args" {:args (class args) 
+       (throw (ex-info "Invalid Args" {:args (class args)
                                        :valids #{GeoArgs GeoRadiusStoreArgs}})))))
   (geopos [this key member]
     (->> (.geopos this key ^objects (into-array Object [member]))
@@ -584,4 +584,3 @@
          (into [])))
   (geodist [this key from to unit]
     (.geodist this key from to (->unit unit))))
-

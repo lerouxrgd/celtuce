@@ -8,13 +8,19 @@
   (:import
    (io.lettuce.core.api.sync RedisCommands)
    (io.lettuce.core
-    Value KeyValue ScanCursor ScriptOutputType
+    Value KeyValue ScanCursor
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
-    ZStoreArgs ZAddArgs ScoredValue
+    ZStoreArgs ScoredValue
     GeoArgs GeoRadiusStoreArgs GeoWithin GeoCoordinates)
    (java.util Map)))
 
 (extend-type RedisCommands
+
+  ConnectionCommands
+  (ping [this]
+    (.ping this))
+  (echo [this val]
+    (.echo this val))
 
   HashCommands
   (hdel [this k f]

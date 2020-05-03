@@ -1,5 +1,5 @@
 (ns celtuce.server-sync-test
-  (:require 
+  (:require
    [clojure.test :refer :all]
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]))
@@ -14,8 +14,8 @@
        (try ~@body
             (finally (conn/shutdown rserv#))))))
 
-(defmacro with-pubsub-cmds 
-  "Binds local @pub and @sub with different connections, 
+(defmacro with-pubsub-cmds
+  "Binds local @pub and @sub with different connections,
   registers the given listener on @sub"
   [listener & body]
   `(let [rserv-pub# (conn/as-pubsub (conn/redis-server redis-url))
@@ -41,8 +41,14 @@
 (use-fixtures :once cmds-fixture)
 (use-fixtures :each flush-fixture)
 
+(deftest connection-commands-test
+
+  (testing "ping and echo"
+    (is (= "PONG"  (redis/ping *cmds*)))
+    (is (= "hello" (redis/echo *cmds* "hello")))))
+
 (deftest hash-commands-test
-  
+
   (testing "set and get multiple hash values"
     (redis/hmset *cmds* "h" {:foo "bar" :a 1 0 nil})
     (redis/hset  *cmds* "h" "b" :b)
@@ -54,9 +60,9 @@
     (is (= ["bar" 1 nil :b nil]
            (redis/hmget *cmds* "h" [:foo :a 0 "b" :dont-exist])))
     (is (= {:foo "bar" :a 1 0 nil "b" :b} (redis/hgetall *cmds* "h")))
-    (is (= #{:foo :a 0 "b"} 
+    (is (= #{:foo :a 0 "b"}
            (into #{} (redis/hkeys *cmds* "h"))))
-    (is (= #{"bar" 1 nil :b} 
+    (is (= #{"bar" 1 nil :b}
            (into #{} (redis/hvals *cmds* "h")))))
 
   (testing "delete and multi delete hash values"
@@ -72,7 +78,7 @@
     (is (= 10  (redis/hincrby      *cmds* "h" :x 9)))
     (is (= 1.0 (redis/hincrbyfloat *cmds* "h" :y 1)))
     (is (= 3.0 (redis/hincrbyfloat *cmds* "h" :y 2.0))))
-  
+
   (testing "hscan cursors"
     (redis/hmset *cmds* "hl" (->> (range 10000) (split-at 5000) (apply zipmap)))
     (let [cur (redis/hscan
@@ -83,7 +89,7 @@
       (is (<= 5 (count res) 15))) ;; about 10
     (let [els1 (->> (redis/scan-args :limit 50)
                     (redis/hscan *cmds* "hl" (redis/scan-cursor))
-                    (redis/chunked-scan-seq) 
+                    (redis/chunked-scan-seq)
                     (take 100))
           els2 (redis/hscan-seq *cmds* "hl")]
       (is (<= 95 (count els1) 105)) ;; about 100
@@ -103,26 +109,26 @@
                   (redis/hscan *cmds* nil (redis/scan-cursor)))))))
 
 (deftest key-commands-test
-  
+
   (testing "basic key checks"
     (redis/hmset *cmds* "h" {:foo "bar" :a 1 "b" :b})
     (is (= 1 (redis/exists   *cmds* "h")))
     (is (= 1 (redis/mexists  *cmds* ["h" :dont-exist])))
     (is (= ["h"] (redis/keys *cmds* "h")))
     (is (= ["h"] (->> (redis/scan *cmds*)
-                      (redis/chunked-scan-seq) 
+                      (redis/chunked-scan-seq)
                       (apply concat)
                       (into []))))
     (is (= ["h"] (redis/scan-seq *cmds*)))
     (is (= "hash" (redis/type *cmds* "h"))))
-  
+
   (testing "ttl related"
     (is (= -1 (redis/ttl *cmds* "h")))
     (redis/expire *cmds* "h" 1)
     (is (> 1001 (redis/pttl *cmds* "h") 0))
     (redis/persist *cmds* "h")
     (is (= -1 (redis/pttl *cmds* "h"))))
-  
+
   (testing "dump/restore and delete"
     (let [dump (redis/dump *cmds* "h")]
       (redis/del *cmds* "h")
@@ -171,8 +177,8 @@
       (is (= 4  (redis/bitcount *cmds* "k" 0 0)))
       (is (= 6  (redis/bitcount *cmds* "k" 1 1)))
       (redis/set *cmds* "i" "10")
-      (is (= 11    (redis/incr        *cmds* "i")))      
-      (is (= 15    (redis/incrby      *cmds* "i" 4)))      
+      (is (= 11    (redis/incr        *cmds* "i")))
+      (is (= 15    (redis/incrby      *cmds* "i" 4)))
       (is (= 11    (redis/decrby      *cmds* "i" 4)))
       (is (= 10    (redis/decr        *cmds* "i")))
       (is (= 11.11 (redis/incrbyfloat *cmds* "i" 1.11)))
@@ -233,7 +239,7 @@
            (redis/smembers *cmds* "s1")))
     (is (= #{:a :b :c :d :e}
            (->> (redis/sscan *cmds* "s1" (redis/scan-cursor))
-                (redis/chunked-scan-seq) 
+                (redis/chunked-scan-seq)
                 (take 5)
                 (apply into #{}))))
     (is (= #{:a :b :c :d :e}
@@ -303,7 +309,7 @@
   (testing "lexicographical order based commands"
     (with-str-cmds
       (redis/mzadd *cmds* "z2" [[0.0 "a"] [0.0 "b"] [0.0 "c"] [0.0 "d"] [0.0 "e"]])
-      (is (= ["a" "b" "c"] 
+      (is (= ["a" "b" "c"]
              (redis/zrangebylex *cmds* "z2" "-" "[c")))
       (is (= 5 (redis/zlexcount *cmds* "z2" "-" "+"))))))
 
@@ -423,4 +429,3 @@
         (redis/unsubscribe @sub "c")
         (is (= true @unsubscribed?))
         (is (= 0 @nb-sub)) ))))
-

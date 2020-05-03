@@ -1,7 +1,6 @@
 (ns celtuce.cluster-dynamic-test
-  (:require 
+  (:require
    [clojure.test :refer :all]
-   [celtuce.commands :as redis :exclude [flushall]]
    [celtuce.connector :as conn]))
 
 (def redis-url "redis://localhost:30001")
@@ -64,4 +63,3 @@
     (is (= "bar" (my-get *cmds* "foo")))
     (is (= "bar" (String. ^bytes (my-get-raw *cmds* "foo"))))
     ))
-

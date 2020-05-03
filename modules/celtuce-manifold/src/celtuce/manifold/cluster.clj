@@ -1,21 +1,27 @@
 (ns celtuce.manifold.cluster
   (:refer-clojure :exclude [get set keys sort type eval time])
-  (:require 
+  (:require
    [celtuce.commands :refer :all]
    [celtuce.args.zset :refer [zadd-args]]
    [celtuce.args.scripting :refer [output-type]]
    [celtuce.args.geo :refer [->unit]]
    [manifold.deferred :as d])
-  (:import 
+  (:import
    (io.lettuce.core.cluster.api.async RedisAdvancedClusterAsyncCommands)
-   (io.lettuce.core 
-    Value KeyValue ScanCursor ScriptOutputType KeyValue
+   (io.lettuce.core
+    Value KeyValue ScanCursor KeyValue
     ScanArgs MigrateArgs SortArgs BitFieldArgs SetArgs KillArgs
-    ZStoreArgs ZAddArgs ScoredValue
+    ZStoreArgs ScoredValue
     GeoArgs GeoRadiusStoreArgs GeoWithin GeoCoordinates)
    (java.util Map)))
 
 (extend-type RedisAdvancedClusterAsyncCommands
+
+  ConnectionCommands
+  (ping [this]
+    (d/->deferred (.ping this)))
+  (echo [this val]
+    (d/->deferred (.echo this val)))
 
   HashCommands
   (hdel [this k f]
@@ -34,7 +40,7 @@
     (d/chain (d/->deferred (.hgetall this k))
              #(into {} %)))
   (hkeys [this k]
-    (d/chain (d/->deferred (.hkeys this k)) 
+    (d/chain (d/->deferred (.hkeys this k))
              #(into [] %)))
   (hlen [this k]
     (d/->deferred (.hlen this k)))
@@ -44,7 +50,7 @@
              #(into (empty fs) %)))
   (hmset [this k ^Map m]
     (d/->deferred (.hmset this k m)))
-  (hscan 
+  (hscan
     ([this k]
      (d/->deferred (.hscan this k)))
     ([this k ^ScanCursor c]
@@ -73,7 +79,7 @@
   (expireat [this k ts-sec]
     (d/->deferred (.expire this k ^long ts-sec)))
   (keys [this pattern]
-    (d/chain (d/->deferred (.keys this pattern)) 
+    (d/chain (d/->deferred (.keys this pattern))
              #(into [] %)))
   (mdel [this ks]
     (d/->deferred (.del this (into-array Object ks))))
@@ -109,7 +115,7 @@
     (d/->deferred (.renamenx this k1 k2)))
   (restore [this k ^long ttl ^bytes v]
     (d/->deferred (.restore this k ttl v)))
-  (scan 
+  (scan
     ([this]
      (d/->deferred (.scan this)))
     ([this ^ScanCursor c]
@@ -118,7 +124,7 @@
      (d/->deferred (.scan this c args))))
   (sort
     ([this k]
-     (d/->deferred (.sort this k))) 
+     (d/->deferred (.sort this k)))
     ([this k ^SortArgs args]
      (d/->deferred (.sort this k args))))
   (sort-store [this k ^SortArgs args d]
@@ -135,13 +141,13 @@
   StringsCommands
   (append [this k v]
     (d/->deferred (.append this k v)))
-  (bitcount 
+  (bitcount
     ([this k]
      (d/->deferred (.bitcount this k)))
     ([this k ^long s ^long e]
      (d/->deferred (.bitcount this k s e))))
   (bitfield [this k ^BitFieldArgs args]
-    (d/chain (d/->deferred (.bitfield this k args)) 
+    (d/chain (d/->deferred (.bitfield this k args))
              #(into [] %)))
   (bitop-and [this d ks]
     (d/->deferred (.bitopAnd this d ^objects (into-array Object ks))))
@@ -151,9 +157,9 @@
     (d/->deferred (.bitopOr this d ^objects (into-array Object ks))))
   (bitop-xor [this d ks]
     (d/->deferred (.bitopXor this d ^objects (into-array Object ks))))
-  (bitpos 
+  (bitpos
     ([this k ^Boolean state]
-     (d/->deferred (.bitpos this k state))) 
+     (d/->deferred (.bitpos this k state)))
     ([this k ^Boolean state ^Long s ^Long e]
      (d/->deferred (.bitpos this k state s e))))
   (decr [this k]
@@ -175,14 +181,14 @@
   (incrbyfloat [this k ^double a]
     (d/->deferred (.incrbyfloat this k a)))
   (mget [this ks]
-    (d/chain (d/->deferred (.mget this (into-array Object ks))) 
+    (d/chain (d/->deferred (.mget this (into-array Object ks)))
              #(map (fn [^KeyValue kv] (.getValueOrElse kv nil)) %)
              #(into (empty ks) %)))
   (mset [this m]
     (d/->deferred (.mset this m)))
   (msetnx [this m]
     (d/->deferred (.msetnx this m)))
-  (set 
+  (set
     ([this k v]
      (d/->deferred (.set this k v)))
     ([this k v ^SetArgs args]
@@ -264,7 +270,7 @@
   (sdiffstore [this d ks]
     (d/->deferred (.sdiffstore this d ^objects (into-array Object ks))))
   (sinter [this ks]
-    (d/chain (d/->deferred (.sinter this ^objects (into-array Object ks))) 
+    (d/chain (d/->deferred (.sinter this ^objects (into-array Object ks)))
              #(into #{} %)))
   (sinterstore [this d ks]
     (d/->deferred (.sinterstore this d ^objects (into-array Object ks))))
@@ -277,13 +283,13 @@
              #(into #{} %)))
   (spop
     ([this k]
-     (d/->deferred (.spop this k))) 
+     (d/->deferred (.spop this k)))
     ([this k ^long c]
      (d/chain (d/->deferred (.spop this k c))
               #(into #{} %))))
-  (srandmember 
+  (srandmember
     ([this k]
-     (d/->deferred (.srandmember this k))) 
+     (d/->deferred (.srandmember this k)))
     ([this k ^long c]
      (d/chain (d/->deferred (.srandmember this k c))
               #(into #{} %))))
@@ -294,7 +300,7 @@
              #(into #{} %)))
   (sunionstore [this d ks]
     (d/->deferred (.sunionstore this d ^objects (into-array Object ks))))
-  (sscan 
+  (sscan
     ([this k]
      (d/->deferred (.sscan this k)))
     ([this k ^ScanCursor c]
@@ -404,7 +410,7 @@
     (d/->deferred (.zlexcount this k min max)))
   (zremrangebylex [this k ^String min ^String max]
     (d/->deferred (.zremrangebylex this k min max)))
-  (zrangebylex 
+  (zrangebylex
     ([this k ^String min ^String max]
      (d/chain (d/->deferred (.zrangebylex this k min max))
               #(into [] %)))
@@ -413,22 +419,22 @@
               #(into [] %))))
 
   ScriptingCommands
-  (eval 
+  (eval
     ([this ^String script t ks]
      (d/->deferred
       (.eval this script (output-type t) ^objects (into-array Object ks))))
     ([this ^String script t ks vs]
-     (d/->deferred 
-      (.eval this script (output-type t) 
+     (d/->deferred
+      (.eval this script (output-type t)
              ^objects (into-array Object ks)
              ^objects (into-array Object vs)))))
-  (evalsha 
+  (evalsha
     ([this ^String digest t ks]
      (d/->deferred
       (.evalsha this digest (output-type t) ^objects (into-array Object ks))))
     ([this ^String digest t ks vs]
      (d/->deferred
-      (.evalsha this digest (output-type t) 
+      (.evalsha this digest (output-type t)
                 ^objects (into-array Object ks)
                 ^objects (into-array Object vs)))))
   (script-exists? [this digests]
@@ -504,9 +510,9 @@
     (d/->deferred (.flushdb this)))
   (flushdb-async [this]
     (d/->deferred (.flushdbAsync this)))
-  (info 
+  (info
     ([this]
-     (d/->deferred (.info this))) 
+     (d/->deferred (.info this)))
     ([this ^String section]
      (d/->deferred (.info this section))))
   (lastsave [this]
@@ -519,10 +525,10 @@
     (d/->deferred (.slaveof this host port)))
   (slaveof-no-one [this]
     (d/->deferred (.slaveofNoOne this)))
-  (slowlog-get 
+  (slowlog-get
     ([this]
      (d/chain (d/->deferred (.slowlogGet this))
-              #(into [] %))) 
+              #(into [] %)))
     ([this ^Integer count]
      (into [] (.slowlogGet this count))))
   (slowlog-len [this]
@@ -567,7 +573,7 @@
     ([this key ^Double long ^Double lat ^Double dist unit args]
      (condp instance? args
        GeoArgs
-       (d/chain (d/->deferred 
+       (d/chain (d/->deferred
                  (.georadius this key long lat dist (->unit unit) ^GeoArgs args))
                 #(map (fn [^GeoWithin g]
                         (if-not g
@@ -584,7 +590,7 @@
        GeoRadiusStoreArgs
        (d/->deferred
         (.georadius this key long lat dist (->unit unit) ^GeoRadiusStoreArgs args))
-       (throw (ex-info "Invalid Args" {:args (class args) 
+       (throw (ex-info "Invalid Args" {:args (class args)
                                        :valids #{GeoArgs GeoRadiusStoreArgs}})))))
   (georadiusbymember
     ([this key member ^Double dist unit]
@@ -610,7 +616,7 @@
        GeoRadiusStoreArgs
        (d/->deferred
         (.georadiusbymember this key member dist (->unit unit) ^GeoRadiusStoreArgs args))
-       (throw (ex-info "Invalid Args" {:args (class args) 
+       (throw (ex-info "Invalid Args" {:args (class args)
                                        :valids #{GeoArgs GeoRadiusStoreArgs}})))))
   (geopos [this key member]
     (d/chain (d/->deferred (.geopos this key ^objects (into-array Object [member])))

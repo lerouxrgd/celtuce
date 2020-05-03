@@ -1,6 +1,6 @@
 (ns celtuce.commands
   (:refer-clojure :exclude [get set keys sort type eval time])
-  (:require 
+  (:require
    [potemkin :refer [import-vars]]
    [celtuce.args.migrate]
    [celtuce.args.sort]
@@ -20,6 +20,13 @@
 (import-vars [celtuce.args.geo      geo-args georadius-store-args])
 (import-vars [celtuce.scan          scan-cursor scan-args scan-res chunked-scan-seq
                                     scan-seq hscan-seq zscan-seq sscan-seq])
+
+(defprotocol ConnectionCommands
+  "Redis connection Commands"
+  (ping [this]
+        "Ping the server")
+  (echo [this val]
+        "Echo the given string"))
 
 (defprotocol HashCommands
   "Redis Hash Commands"
@@ -78,7 +85,7 @@
                 "Find all keys matching the given pattern")
   (mexists      [this keys]
                 "Determine how many keys exist")
-  (migrate      [this host port db timeout-ms args] 
+  (migrate      [this host port db timeout-ms args]
                 "Transfer a key from a Redis instance to another one")
   (move         [this key db]
                 "Move a key to another database")
@@ -116,7 +123,7 @@
                 "Get the time to live for a key")
   (type         [this key]
                 "Determine the type stored at key")
-  (scan         [this] [this cursor] [this cursor args] 
+  (scan         [this] [this cursor] [this cursor args]
                 "Incrementally iterate the keys space"))
 
 (defprotocol StringsCommands
@@ -494,4 +501,3 @@
                  "Subscribed to a pattern")
   (punsubscribed [this pattern count]
                  "Unsubscribed from a pattern"))
-

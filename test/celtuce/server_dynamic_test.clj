@@ -1,7 +1,6 @@
 (ns celtuce.server-dynamic-test
-  (:require 
+  (:require
    [clojure.test :refer :all]
-   [celtuce.commands :as redis :exclude [flushall]]
    [celtuce.connector :as conn]))
 
 (def redis-url "redis://localhost:6379")
@@ -62,5 +61,4 @@
   (testing "set and get various keys/values"
     (my-set *cmds* "foo" "bar")
     (is (= "bar" (my-get *cmds* "foo")))
-    (is (= "bar" (String. ^bytes (my-get-raw *cmds* "foo"))))
-    ))
+    (is (= "bar" (String. ^bytes (my-get-raw *cmds* "foo"))))))

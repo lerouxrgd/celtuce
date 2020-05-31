@@ -38,7 +38,9 @@
 
 (defn conn-pool
   "Create a ConnectionPoolImpl that wraps a ConnectionPoolSupport.
-  Takes a connector and a command function that will be called on pooled connections"
+  Takes a connector and a command function that will be called on pooled connections.
+  Last parameter (options) allows to fully customize your pool based on Apache2 GenericObjectPoolConfig;
+  you have two options: pass a map with keys max-idle, min-idle and max-total or a org.apache.commons.pool2.impl.GenericObjectPoolConfig"
   ([connector cmds-fn]
    (conn-pool connector cmds-fn {}))
   ([{:keys [redis-client stateful-conn codec] :as connector} cmds-fn options]
@@ -57,7 +59,9 @@
              (.connectPubSub ^RedisClusterClient redis-client codec)
              RedisClient
              (.connectPubSub ^RedisClient redis-client ^RedisCodec codec)))))
-     (pool-config options))
+     (if (map? options)
+       (pool-config options)
+       options))
     connector
     cmds-fn)))
 

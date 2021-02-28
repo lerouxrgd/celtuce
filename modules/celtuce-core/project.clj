@@ -7,6 +7,6 @@
   :dependencies [[org.clojure/clojure ~clj-version]
                  [io.lettuce/lettuce-core "5.3.0.RELEASE"]
                  [potemkin "0.4.5"]
-                 [com.taoensso/nippy "2.14.0"]
+                 [com.taoensso/nippy "3.1.1"]
                  [com.twitter/carbonite "1.5.0"]]
   :global-vars {*warn-on-reflection* true})

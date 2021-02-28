@@ -3,23 +3,24 @@
    [clojure.java.io :as io]
    [celtuce.codec :refer [nippy-codec]]
    [celtuce.commands :as cmds])
-  (:import 
-   (java.util.concurrent TimeUnit)
-   (java.time Duration)
-   (java.time.temporal ChronoUnit)
-   (io.lettuce.core
-    RedisClient
-    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-    SocketOptions SslOptions)
-   (io.lettuce.core.cluster
-    ClusterClientOptions ClusterClientOptions$Builder
-    ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-   (io.lettuce.core.codec RedisCodec)
-   (io.lettuce.core.api StatefulRedisConnection)
-   (io.lettuce.core.dynamic RedisCommandFactory)
-   (io.lettuce.core.cluster RedisClusterClient)
-   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
-   (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)))
+  (:import
+    (java.util.concurrent TimeUnit)
+    (java.time Duration)
+    (java.time.temporal ChronoUnit)
+    (io.lettuce.core
+     RedisClient
+     ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+     SocketOptions SslOptions)
+    (io.lettuce.core.cluster
+     ClusterClientOptions ClusterClientOptions$Builder
+     ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+    (io.lettuce.core.codec RedisCodec)
+    (io.lettuce.core.api StatefulRedisConnection)
+    (io.lettuce.core.dynamic RedisCommandFactory)
+    (io.lettuce.core.cluster RedisClusterClient)
+    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
+    (io.lettuce.core.resource ClientResources)))
 
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
@@ -225,10 +226,11 @@
   [^String redis-uri & 
    {codec :codec
     client-options :client-options
-    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
-     :or {auto-flush true}} :conn-options
-    :or {codec (nippy-codec) client-opts {}}}]
-  (let [redis-client (RedisClient/create redis-uri)
+    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit ^ClientResources client-resources :client-resources :or {auto-flush true}} :conn-options
+    :or {codec (nippy-codec) client-options {}}}]
+  (let [redis-client (if (nil? client-resources)
+                       (RedisClient/create redis-uri)
+                       (RedisClient/create client-resources redis-uri))
         _ (.setOptions redis-client (.build (b-client-options client-options)))
         stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
@@ -273,10 +275,12 @@
   [^String redis-uri &
    {codec :codec
     client-options :client-options
-    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit
+    {auto-flush :auto-flush conn-timeout :timeout conn-unit :unit ^ClientResources client-resources :client-resources
      :or {auto-flush true}} :conn-options
     :or {codec (nippy-codec) client-options {}}}]
-  (let [redis-client (RedisClusterClient/create redis-uri)
+  (let [redis-client (if (nil? client-resources)
+                       (RedisClusterClient/create redis-uri)
+                       (RedisClusterClient/create client-resources redis-uri))
         _ (.setOptions redis-client
                        (.build (b-cluster-client-options client-options)))
         stateful-conn (.connect redis-client codec)]

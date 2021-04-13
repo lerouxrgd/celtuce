@@ -161,6 +161,8 @@
      (.disconnectedBehavior (-> opts :disconnected-behavior kw->dbehavior))
      (contains? opts :socket-options)
      (.socketOptions (socket-options (:socket-options opts)))
+     (contains? opts :timeout-options)
+     (.timeoutOptions (timeout-options (:timeout-options opts)))
      (contains? opts :ssl-options)
      (.sslOptions (ssl-options (:ssl-options opts))))))
 

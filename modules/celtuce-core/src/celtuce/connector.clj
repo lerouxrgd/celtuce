@@ -8,9 +8,9 @@
     (java.time Duration)
     (java.time.temporal ChronoUnit)
     (io.lettuce.core
-     RedisClient
-     ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-     SocketOptions SslOptions)
+      RedisClient
+      ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+      SocketOptions SslOptions TimeoutOptions)
     (io.lettuce.core.cluster
      ClusterClientOptions ClusterClientOptions$Builder
      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
@@ -129,6 +129,18 @@
     ;; finally, build
     true (.build)))
 
+(defn- ^TimeoutOptions timeout-options
+  "Internal helper to build TimeoutOptions, used by b-client-options"
+  [opts]
+  (cond-> (TimeoutOptions/builder)
+          (and (contains? (:fixed-timeout opts) :timeout)
+               (contains? (:fixed-timeout opts) :unit))
+          (.fixedTimeout
+            (Duration/of (-> opts :fixed-timeout :timeout) (kw->tunit (-> opts :fixed-timeout :unit))))
+          (contains? opts :timeout-commands)
+            (.timeoutCommands (:timeout-commands opts))
+          true (.build)))
+
 (defn- ^ClientOptions$Builder b-client-options
   "Sets up a ClientOptions builder from a map of options"
   ([opts]
@@ -149,6 +161,8 @@
      (.disconnectedBehavior (-> opts :disconnected-behavior kw->dbehavior))
      (contains? opts :socket-options)
      (.socketOptions (socket-options (:socket-options opts)))
+     (contains? opts :timeout-options)
+     (.timeoutOptions (timeout-options (:timeout-options opts)))
      (contains? opts :ssl-options)
      (.sslOptions (ssl-options (:ssl-options opts))))))
 

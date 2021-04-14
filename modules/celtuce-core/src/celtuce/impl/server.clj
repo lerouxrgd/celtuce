@@ -416,9 +416,9 @@
     (.scriptFlush this))
   (script-kill [this]
     (.scriptKill this))
-  (script-load [this script]
+  (script-load [this ^String script]
     (.scriptLoad this script))
-  (digest [this script]
+  (digest [this ^String script]
     (.digest this script))
 
   ServerCommands

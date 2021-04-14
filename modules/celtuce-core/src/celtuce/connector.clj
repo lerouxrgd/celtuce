@@ -4,23 +4,23 @@
    [celtuce.codec :refer [nippy-codec]]
    [celtuce.commands :as cmds])
   (:import
-    (java.util.concurrent TimeUnit)
-    (java.time Duration)
-    (java.time.temporal ChronoUnit)
-    (io.lettuce.core
-      RedisClient
-      ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-      SocketOptions SslOptions TimeoutOptions)
-    (io.lettuce.core.cluster
-     ClusterClientOptions ClusterClientOptions$Builder
-     ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-    (io.lettuce.core.codec RedisCodec)
-    (io.lettuce.core.api StatefulRedisConnection)
-    (io.lettuce.core.dynamic RedisCommandFactory)
-    (io.lettuce.core.cluster RedisClusterClient)
-    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
-    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
-    (io.lettuce.core.resource ClientResources)))
+   (java.util.concurrent TimeUnit)
+   (java.time Duration)
+   (java.time.temporal ChronoUnit)
+   (io.lettuce.core
+    RedisClient
+    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+    SocketOptions SslOptions TimeoutOptions)
+   (io.lettuce.core.cluster
+    ClusterClientOptions ClusterClientOptions$Builder
+    ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+   (io.lettuce.core.codec RedisCodec)
+   (io.lettuce.core.api StatefulRedisConnection)
+   (io.lettuce.core.dynamic RedisCommandFactory)
+   (io.lettuce.core.cluster RedisClusterClient)
+   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+   (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
+   (io.lettuce.core.resource ClientResources)))
 
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
@@ -82,7 +82,7 @@
          (contains? opts :unit))
     (.connectTimeout (:timeout opts) (kw->tunit (:unit opts)))
     (contains? opts :keep-alive)
-    (.keepAlive (:keep-alive opts))
+    (.keepAlive ^boolean (:keep-alive opts))
     (contains? opts :tcp-no-delay)
     (.tcpNoDelay (:tcp-no-delay opts))
     true (.build)))
@@ -133,13 +133,13 @@
   "Internal helper to build TimeoutOptions, used by b-client-options"
   [opts]
   (cond-> (TimeoutOptions/builder)
-          (and (contains? (:fixed-timeout opts) :timeout)
-               (contains? (:fixed-timeout opts) :unit))
-          (.fixedTimeout
-            (Duration/of (-> opts :fixed-timeout :timeout) (kw->tunit (-> opts :fixed-timeout :unit))))
-          (contains? opts :timeout-commands)
-            (.timeoutCommands (:timeout-commands opts))
-          true (.build)))
+    (and (contains? (:fixed-timeout opts) :timeout)
+         (contains? (:fixed-timeout opts) :unit))
+    (.fixedTimeout
+     (Duration/of (-> opts :fixed-timeout :timeout) (kw->tunit (-> opts :fixed-timeout :unit))))
+    (contains? opts :timeout-commands)
+    (.timeoutCommands (:timeout-commands opts))
+    true (.build)))
 
 (defn- ^ClientOptions$Builder b-client-options
   "Sets up a ClientOptions builder from a map of options"
@@ -249,16 +249,16 @@
      ^RedisCodec codec
      ^RedisCommandFactory dynamic-factory]
   RedisConnector
-  (commands-sync [this]
+  (commands-sync [_]
     (require '[celtuce.impl.server])
     (.sync stateful-conn))
-  (commands-dynamic [this cmd-class]
+  (commands-dynamic [_ cmd-class]
     (.getCommands dynamic-factory cmd-class))
-  (flush-commands [this]
+  (flush-commands [_]
     (.flushCommands stateful-conn))
-  (reset [this]
+  (reset [_]
     (.reset stateful-conn))
-  (shutdown [this]
+  (shutdown [_]
     (.close stateful-conn)
     (.shutdown redis-client)))
 
@@ -282,7 +282,7 @@
         _ (.setOptions redis-client (.build (b-client-options client-options)))
         stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn conn-timeout (kw->tunit conn-unit)))
+      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->tunit conn-unit))))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisServer
      {:redis-client   redis-client
@@ -306,16 +306,16 @@
      ^RedisCodec codec
      ^RedisCommandFactory dynamic-factory]
   RedisConnector
-  (commands-sync [this]
+  (commands-sync [_]
     (require '[celtuce.impl.cluster])
     (.sync stateful-conn))
-  (commands-dynamic [this cmd-class]
+  (commands-dynamic [_ cmd-class]
     (.getCommands dynamic-factory cmd-class))
-  (flush-commands [this]
+  (flush-commands [_]
     (.flushCommands stateful-conn))
-  (reset [this]
+  (reset [_]
     (.reset stateful-conn))
-  (shutdown [this]
+  (shutdown [_]
     (.close stateful-conn)
     (.shutdown redis-client)))
 
@@ -340,7 +340,7 @@
                        (.build (b-cluster-client-options client-options)))
         stateful-conn (.connect redis-client codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn conn-timeout (kw->tunit conn-unit)))
+      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->tunit conn-unit))))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisCluster
      {:redis-client   redis-client
@@ -363,20 +363,20 @@
 (defrecord RedisPubSub
     [redis-client ^StatefulRedisPubSubConnection stateful-conn codec]
   RedisConnector
-  (commands-sync [this]
+  (commands-sync [_]
     (require '[celtuce.impl.pubsub])
     (.sync stateful-conn))
-  (flush-commands [this]
+  (flush-commands [_]
     (.flushCommands stateful-conn))
-  (reset [this]
+  (reset [_]
     (.reset stateful-conn))
-  (shutdown [this]
+  (shutdown [_]
     (.close stateful-conn)
     (condp instance? redis-client
       RedisClusterClient (.shutdown ^RedisClusterClient redis-client)
       RedisClient        (.shutdown ^RedisClient        redis-client)))
   Listenable
-  (add-listener! [this listener]
+  (add-listener! [_ listener]
     (.addListener
      stateful-conn
      (reify
@@ -394,7 +394,7 @@
        (punsubscribed [_ p cnt]
          (cmds/punsubscribed listener p cnt))))))
 
-(defn as-pubsub [{:keys [redis-client ^RedisCodec codec] :as redis-connector}]
+(defn as-pubsub [{:keys [redis-client ^RedisCodec codec]}]
   (->RedisPubSub
    redis-client
    (condp instance? redis-client

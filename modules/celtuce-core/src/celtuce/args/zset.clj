@@ -1,5 +1,5 @@
 (ns celtuce.args.zset
-  (:import 
+  (:import
    (io.lettuce.core ZAddArgs ZAddArgs$Builder ZStoreArgs)))
 
 (defn ^ZAddArgs zadd-args [opt]
@@ -11,8 +11,7 @@
 
 (defn zstore-args [agg & weights]
   (cond-> (ZStoreArgs.)
-    (not (empty? weights)) (.weights (into-array Long/TYPE weights)) 
+    (not (empty? weights)) (.weights ^doubles (into-array Double/TYPE weights))
     (= :sum agg) (.sum)
     (= :min agg) (.min)
     (= :max agg) (.max)))
-

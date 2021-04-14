@@ -444,9 +444,9 @@
     (d/->deferred (.scriptFlush this)))
   (script-kill [this]
     (d/->deferred (.scriptKill this)))
-  (script-load [this script]
+  (script-load [this ^String script]
     (d/->deferred (.scriptLoad this script)))
-  (digest [this script]
+  (digest [this ^String script]
     (.digest this script))
 
   ServerCommands

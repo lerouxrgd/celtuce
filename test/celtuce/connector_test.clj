@@ -38,6 +38,8 @@
       :auto-reconnect                        true
       :request-queue-size                    Integer/MAX_VALUE
       :disconnected-behavior                 :default
+      :timeout-options
+      {:fixed-timeout {:timeout 2 :unit :seconds} :timeout-commands true}
       :socket-options
       {:timeout 10, :unit :seconds, :keep-alive false, :tcp-no-delay false}
       :ssl-options

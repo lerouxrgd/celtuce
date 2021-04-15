@@ -315,7 +315,7 @@
         (is (= 10  @(redis/eval    *cmds* script :integer [])))
         (is (= sha (redis/digest  *cmds* script)))
         (is (= 10  @(redis/evalsha *cmds* sha :integer [])))
-        (redis/script-flush *cmds*)
+        @(redis/script-flush *cmds*)
         (is (thrown? io.lettuce.core.RedisCommandExecutionException
                      @(redis/evalsha *cmds* sha :integer [])))))))
 

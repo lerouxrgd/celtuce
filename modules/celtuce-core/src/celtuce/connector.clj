@@ -136,7 +136,7 @@
     (and (contains? (:fixed-timeout opts) :timeout)
          (contains? (:fixed-timeout opts) :unit))
     (.fixedTimeout
-     (Duration/of (-> opts :fixed-timeout :timeout) (kw->tunit (-> opts :fixed-timeout :unit))))
+     (Duration/of (-> opts :fixed-timeout :timeout) (kw->cunit (-> opts :fixed-timeout :unit))))
     (contains? opts :timeout-commands)
     (.timeoutCommands (:timeout-commands opts))
     true (.build)))

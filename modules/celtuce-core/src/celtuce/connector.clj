@@ -282,7 +282,7 @@
         _ (.setOptions redis-client (.build (b-client-options client-options)))
         stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->tunit conn-unit))))
+      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->cunit conn-unit))))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisServer
      {:redis-client   redis-client
@@ -340,7 +340,7 @@
                        (.build (b-cluster-client-options client-options)))
         stateful-conn (.connect redis-client codec)]
     (when (and conn-timeout conn-unit)
-      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->tunit conn-unit))))
+      (.setTimeout stateful-conn (Duration/of  conn-timeout (kw->cunit conn-unit))))
     (.setAutoFlushCommands stateful-conn auto-flush)
     (map->RedisCluster
      {:redis-client   redis-client

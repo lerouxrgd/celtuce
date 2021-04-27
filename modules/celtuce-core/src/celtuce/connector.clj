@@ -250,7 +250,8 @@
      ^RedisCommandFactory dynamic-factory]
   RedisConnector
   (commands-sync [_]
-    (require '[celtuce.impl.server])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.impl.server]))
     (.sync stateful-conn))
   (commands-dynamic [_ cmd-class]
     (.getCommands dynamic-factory cmd-class))
@@ -307,7 +308,8 @@
      ^RedisCommandFactory dynamic-factory]
   RedisConnector
   (commands-sync [_]
-    (require '[celtuce.impl.cluster])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.impl.cluster]))
     (.sync stateful-conn))
   (commands-dynamic [_ cmd-class]
     (.getCommands dynamic-factory cmd-class))
@@ -364,7 +366,8 @@
     [redis-client ^StatefulRedisPubSubConnection stateful-conn codec]
   RedisConnector
   (commands-sync [_]
-    (require '[celtuce.impl.pubsub])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.impl.pubsub]))
     (.sync stateful-conn))
   (flush-commands [_]
     (.flushCommands stateful-conn))

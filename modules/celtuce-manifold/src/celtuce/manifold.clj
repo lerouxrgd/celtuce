@@ -15,16 +15,19 @@
 (extend-protocol CommandsManifold
   RedisServer
   (commands-manifold [this]
-    (require '[celtuce.manifold.scan])
-    (require '[celtuce.manifold.server])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.manifold.scan])
+      (require '[celtuce.manifold.server]))
     (.async ^StatefulRedisConnection (:stateful-conn this)))
   RedisCluster
   (commands-manifold [this]
-    (require '[celtuce.manifold.scan])
-    (require '[celtuce.manifold.cluster])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.manifold.scan])
+      (require '[celtuce.manifold.cluster]))
     (.async ^StatefulRedisClusterConnection (:stateful-conn this)))
   RedisPubSub
   (commands-manifold [this]
-    (require '[celtuce.manifold.scan])
-    (require '[celtuce.manifold.pubsub])
+    (locking clojure.lang.RT/REQUIRE_LOCK
+      (require '[celtuce.manifold.scan])
+      (require '[celtuce.manifold.pubsub]))
     (.async ^StatefulRedisPubSubConnection (:stateful-conn this))))

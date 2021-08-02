@@ -8,9 +8,9 @@
    (java.time Duration)
    (java.time.temporal ChronoUnit)
    (io.lettuce.core
-    RedisClient
-    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-    SocketOptions SslOptions TimeoutOptions)
+     RedisClient
+     ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+     SocketOptions SslOptions TimeoutOptions RedisURI)
    (io.lettuce.core.cluster
     ClusterClientOptions ClusterClientOptions$Builder
     ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
@@ -264,7 +264,7 @@
     (.shutdown redis-client)))
 
 (defn redis-server
-  [^String redis-uri &
+  [redis-uri &
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush
@@ -278,8 +278,12 @@
     {codec (nippy-codec)
      client-options {}}}]
   (let [redis-client (if (nil? client-resources)
-                       (RedisClient/create redis-uri)
-                       (RedisClient/create client-resources redis-uri))
+                       (if (instance? RedisURI redis-uri)
+                         (RedisClient/create ^RedisURI redis-uri)
+                         (RedisClient/create ^String redis-uri))
+                       (if (instance? RedisURI redis-uri)
+                         (RedisClient/create client-resources ^RedisURI redis-uri)
+                         (RedisClient/create client-resources ^String redis-uri)))
         _ (.setOptions redis-client (.build (b-client-options client-options)))
         stateful-conn (.connect redis-client ^RedisCodec codec)]
     (when (and conn-timeout conn-unit)
@@ -322,7 +326,7 @@
     (.shutdown redis-client)))
 
 (defn redis-cluster
-  [^String redis-uri &
+  [redis-uri &
    {codec :codec
     client-options :client-options
     {auto-flush :auto-flush
@@ -336,8 +340,12 @@
     {codec (nippy-codec)
      client-options {}}}]
   (let [redis-client (if (nil? client-resources)
-                       (RedisClusterClient/create redis-uri)
-                       (RedisClusterClient/create client-resources redis-uri))
+                       (if (instance? RedisURI redis-uri)
+                         (RedisClusterClient/create ^RedisURI redis-uri)
+                         (RedisClusterClient/create ^String redis-uri))
+                       (if (instance? RedisURI redis-uri)
+                         (RedisClusterClient/create client-resources ^RedisURI redis-uri)
+                         (RedisClusterClient/create client-resources ^String redis-uri)))
         _ (.setOptions redis-client
                        (.build (b-cluster-client-options client-options)))
         stateful-conn (.connect redis-client codec)]

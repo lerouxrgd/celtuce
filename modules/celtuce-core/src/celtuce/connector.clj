@@ -231,9 +231,9 @@
       (.computationThreadPoolSize (:nb-worker-threads options-map)))
     (.build builder)))
 
-(defn destroy-client-resource
-  "If you create a client resource, you must close/dispose it; otherwise you will not
-  shutdown the Netty threads."
+(defn ^:deprecated destroy-client-resource
+  "Generally you don't need to invoke this anymore in your applications;
+  client resources passed as options are now automatically shutdown as part of the `#'shutdown` protocol method."
   [^ClientResources client-resources]
   (.shutdown client-resources 100 1000 TimeUnit/MILLISECONDS))
 
@@ -247,7 +247,8 @@
      ^StatefulRedisConnection stateful-conn
      conn-options
      ^RedisCodec codec
-     ^RedisCommandFactory dynamic-factory]
+     ^RedisCommandFactory dynamic-factory
+     ^ClientResources client-resources]
   RedisConnector
   (commands-sync [_]
     (locking clojure.lang.RT/REQUIRE_LOCK
@@ -261,7 +262,9 @@
     (.reset stateful-conn))
   (shutdown [_]
     (.close stateful-conn)
-    (.shutdown redis-client)))
+    (.shutdown redis-client)
+    ;; `some->`: for backwards compatibility
+    (some-> client-resources destroy-client-resource)))
 
 (defn redis-server
   [^String redis-uri &
@@ -293,7 +296,8 @@
       :conn-options   {:auto-flush auto-flush
                        :timeout    conn-timeout
                        :unit       conn-unit}
-      :dynamic-factory (RedisCommandFactory. stateful-conn)})))
+      :dynamic-factory (RedisCommandFactory. stateful-conn)
+      :client-resources client-resources})))
 
 ;;
 ;; Redis Cluster
@@ -305,7 +309,8 @@
      ^StatefulRedisClusterConnection stateful-conn
      conn-options
      ^RedisCodec codec
-     ^RedisCommandFactory dynamic-factory]
+     ^RedisCommandFactory dynamic-factory
+     ^ClientResources client-resources]
   RedisConnector
   (commands-sync [_]
     (locking clojure.lang.RT/REQUIRE_LOCK
@@ -319,7 +324,9 @@
     (.reset stateful-conn))
   (shutdown [_]
     (.close stateful-conn)
-    (.shutdown redis-client)))
+    (.shutdown redis-client)
+    ;; `some->`: for backwards compatibility
+    (some-> client-resources destroy-client-resource)))
 
 (defn redis-cluster
   [^String redis-uri &
@@ -352,6 +359,7 @@
       :conn-options   {:auto-flush auto-flush
                        :timeout    conn-timeout
                        :unit       conn-unit}
+      :client-resources client-resources
       :dynamic-factory (RedisCommandFactory. stateful-conn)})))
 
 ;;
